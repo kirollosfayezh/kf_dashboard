@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-body: "Instrument Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+:root {
+  --bg: #0a0a0d;
+  --bg2: #0c0c10;
+  --panel: #111116;
+  --panel2: #131318;
+  --border: rgba(255, 255, 255, 0.08);
+  --bstrong: rgba(255, 255, 255, 0.14);
+  --text: #ffffff;
+  --text2: rgba(255, 255, 255, 0.66);
+  --text3: rgba(255, 255, 255, 0.46);
+  --hover: rgba(255, 255, 255, 0.06);
+  --grid: rgba(255, 255, 255, 0.03);
+  --navbg: rgba(10, 10, 13, 0.82);
+  --field: #0c0c10;
+  --accent-1: #ff6a00;
+  --accent-2: #ff0080;
+}
+
+:root[data-kf-theme="light"] {
+  --bg: #f7f7f8;
+  --bg2: #ffffff;
+  --panel: #ffffff;
+  --panel2: #f7f7f8;
+  --border: rgba(0, 0, 0, 0.09);
+  --bstrong: rgba(0, 0, 0, 0.16);
+  --text: #111111;
+  --text2: rgba(17, 17, 17, 0.66);
+  --text3: rgba(17, 17, 17, 0.5);
+  --hover: rgba(0, 0, 0, 0.05);
+  --grid: rgba(0, 0, 0, 0.04);
+  --navbg: rgba(255, 255, 255, 0.88);
+  --field: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background 0.4s,
+    color 0.4s;
+}
+
+a {
+  color: var(--accent-1);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+a:hover {
+  color: var(--accent-2);
+}
+
+::selection {
+  background: rgba(255, 106, 0, 0.3);
+}
+
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+  color: inherit;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent-1) !important;
+}
+
+::placeholder {
+  color: var(--text3);
+}
+
+@keyframes kfIn {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.kf-scr {
+  animation: kfIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.kf-row:hover {
+  background: var(--hover);
+}
+
+.kf-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.kf-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--bstrong);
+  border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+  }
+}
