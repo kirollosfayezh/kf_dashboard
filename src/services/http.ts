@@ -83,6 +83,17 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   }
 
   if (!res.ok || (envelope && envelope.success === false)) {
+    // No SERVER_ORIGIN means the build had no VITE_API_BASE_URL, so this request
+    // went to the static host rather than the API — which answers a POST with
+    // 405 and a GET with the SPA's own HTML. Name the real cause.
+    if (!SERVER_ORIGIN && (res.status === 405 || res.status === 404)) {
+      throw new ApiError(
+        "This build has no API address (VITE_API_BASE_URL), so it is calling itself. " +
+          "Set it to the backend origin and redeploy.",
+        res.status,
+        "Config.MissingApiBaseUrl",
+      );
+    }
     const message = envelope ? messageFromEnvelope(envelope) : `Request failed (${res.status})`;
     const code = envelope?.errors?.[0]?.code;
     throw new ApiError(message, res.status, code);
