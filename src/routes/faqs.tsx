@@ -6,7 +6,9 @@ export const Route = createFileRoute("/faqs")({
     <ContentCrudScreen
       collection="faqs"
       label="FAQ"
-      description="Questions shown in the homepage accordion and FAQ schema."
+      description="Questions shown in the homepage accordion. Also feeds FAQ schema for Google."
+      layout="faq"
+      addLabel="Add question"
     />
   ),
 });

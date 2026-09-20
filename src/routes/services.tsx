@@ -7,6 +7,8 @@ export const Route = createFileRoute("/services")({
       collection="services"
       label="Services"
       description="Service cards shown on the homepage and the services page."
+      layout="cards"
+      addLabel="Add service"
     />
   ),
 });

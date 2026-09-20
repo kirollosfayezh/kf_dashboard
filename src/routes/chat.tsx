@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MessageSquare } from "lucide-react";
 import {
   listMessages,
   listThreads,
@@ -207,7 +207,7 @@ function ChatPage() {
     <div className="kf-scr">
       <SectionHead
         title="Live chat"
-        subtitle="Answer website visitors in real time, pushed over Socket.io."
+        subtitle="Answer website visitors in real time. Replies appear on the site instantly, pushed over Socket.io."
         action={
           <span
             className="font-mono inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10.5px] tracking-wider"
@@ -230,8 +230,20 @@ function ChatPage() {
         </div>
       ) : threads.length === 0 ? (
         <EmptyState
+          icon={<MessageSquare size={24} />}
           title="No conversations yet"
-          body="When a visitor opens the chat widget on the site, their thread will appear here live."
+          body="Open the site in another tab and start a chat from the bubble — it will appear here live, and your replies show up on the site instantly."
+          action={
+            <a
+              href={import.meta.env.VITE_SITE_URL ?? "#"}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-[10px] px-5 py-[11px] text-[13.5px] font-semibold"
+              style={{ background: "linear-gradient(135deg,#FF6A00,#FF0080)", color: "#fff" }}
+            >
+              Open the site
+            </a>
+          }
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">

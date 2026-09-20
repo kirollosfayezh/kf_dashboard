@@ -5,6 +5,7 @@ import type { SiteSettings } from "@/services/domain-types";
 import {
   Card,
   ErrorBanner,
+  PanelHead,
   Field,
   GradientButton,
   Input,
@@ -111,13 +112,13 @@ function SettingsPage() {
       <SectionHead title="Site settings" subtitle="Branding, languages, SEO and contact info." />
       {error ? <ErrorBanner message={error} /> : null}
       {/* `min(100%, …)` keeps the tracks from overflowing a 375px viewport. */}
-      <form
-        onSubmit={save}
+      <form onSubmit={save}>
+      <div
         className="grid gap-4"
         style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))" }}
       >
         <Card>
-          <h3 className="font-display mb-4 text-[16px] font-semibold">Branding</h3>
+          <PanelHead title="Branding" subtitle="Name, tagline, logo and the palette the site is built from." />
           <Field label="Site name">
             <Input value={settings.siteName} onChange={(e) => setSettings({ ...settings, siteName: e.target.value })} />
           </Field>
@@ -134,9 +135,35 @@ function SettingsPage() {
               onChange={(e) => setSettings({ ...settings, tagline: { ...settings.tagline, ar: e.target.value } })}
             />
           </Field>
-          <Field label="Logo URL">
-            <Input value={settings.logoUrl ?? ""} onChange={(e) => setSettings({ ...settings, logoUrl: e.target.value })} />
-          </Field>
+          <div className="mb-2 text-[12.5px] font-semibold" style={{ color: "var(--text2)" }}>
+            Logo
+          </div>
+          <div
+            className="mb-4 flex items-center gap-3.5 rounded-[11px] border p-3.5"
+            style={{ borderColor: "var(--border)", background: "var(--panel2)" }}
+          >
+            <div
+              className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-[12px]"
+              style={{ background: "linear-gradient(135deg,#FF6A00,#FF0080)" }}
+            >
+              {settings.logoUrl ? (
+                <img src={settings.logoUrl} alt="" className="h-full w-full object-contain" />
+              ) : (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round">
+                  <path d="M8 9l-3 3 3 3" />
+                  <path d="M16 9l3 3-3 3" />
+                </svg>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <Input
+                aria-label="Logo URL"
+                placeholder="https://… — paste a URL from Media"
+                value={settings.logoUrl ?? ""}
+                onChange={(e) => setSettings({ ...settings, logoUrl: e.target.value })}
+              />
+            </div>
+          </div>
           <Field label="Brand colors" hint="Comma-separated hex values.">
             <Input
               value={settings.brandColors?.join(", ") ?? ""}
@@ -145,15 +172,20 @@ function SettingsPage() {
               }
             />
           </Field>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-[9px]">
             {(settings.brandColors ?? []).map((c) => (
-              <div key={c} className="h-8 w-8 rounded-[9px] border" style={{ background: c, borderColor: "var(--bstrong)" }} />
+              <div
+                key={c}
+                title={c}
+                className="h-[34px] w-[34px] rounded-[9px] border"
+                style={{ background: c, borderColor: "var(--bstrong)" }}
+              />
             ))}
           </div>
         </Card>
 
         <Card>
-          <h3 className="font-display mb-4 text-[16px] font-semibold">Languages</h3>
+          <PanelHead title="Languages" subtitle="Which languages appear in the site switcher." />
           <div className="flex flex-col gap-2.5">{KNOWN_LANGUAGES.map(languageRow)}</div>
           <div className="mt-4">
             <Field label="Default language">
@@ -174,7 +206,7 @@ function SettingsPage() {
         </Card>
 
         <Card>
-          <h3 className="font-display mb-4 text-[16px] font-semibold">SEO</h3>
+          <PanelHead title="SEO" subtitle="Default title and description used where a page has none." />
           <Field label="Default title">
             <Input
               value={settings.seo?.defaultTitle ?? ""}
@@ -190,7 +222,7 @@ function SettingsPage() {
         </Card>
 
         <Card>
-          <h3 className="font-display mb-4 text-[16px] font-semibold">Pixels</h3>
+          <PanelHead title="Pixels" subtitle="Paste an ID and the tag deploys site-wide." />
           <Field label="Google Analytics ID">
             <Input
               value={settings.pixels?.googleAnalyticsId ?? ""}
@@ -206,7 +238,7 @@ function SettingsPage() {
         </Card>
 
         <Card>
-          <h3 className="font-display mb-4 text-[16px] font-semibold">Contact</h3>
+          <PanelHead title="Contact" subtitle="Used by the nav, footer, contact page and the WhatsApp button." />
           <Field label="Email">
             <Input
               value={settings.contact?.email ?? ""}
@@ -227,7 +259,9 @@ function SettingsPage() {
           </Field>
         </Card>
 
-        <div className="flex items-center gap-3">
+        </div>
+
+        <div className="mt-5 flex items-center gap-3">
           <GradientButton type="submit" disabled={saving}>
             {saving ? "Saving…" : "Save changes"}
           </GradientButton>

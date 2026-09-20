@@ -6,7 +6,8 @@ export const Route = createFileRoute("/blogPosts")({
     <ContentCrudScreen
       collection="blogPosts"
       label="Articles"
-      description="Long-form articles shown on the blog."
+      description="Long-form content is what earns organic Google traffic. Each article gets its own URL, title and meta."
+      addLabel="New article"
     />
   ),
 });

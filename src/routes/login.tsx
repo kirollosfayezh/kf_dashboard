@@ -71,7 +71,7 @@ function LoginPage() {
 
         <h1 className="font-display mt-7 text-[27px] font-bold tracking-tight">Sign in</h1>
         <p className="mt-2 text-[14.5px]" style={{ color: "var(--text2)" }}>
-          Manage content, leads and chat for your site.
+          Manage content, analytics and enquiries for your site.
         </p>
 
         <div className="mt-6">

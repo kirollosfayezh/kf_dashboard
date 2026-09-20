@@ -6,7 +6,8 @@ export const Route = createFileRoute("/solutions")({
     <ContentCrudScreen
       collection="solutions"
       label="Solutions"
-      description="Industry solution cards on the solutions page."
+      description="Each industry gets its own card and anchor on the solutions page."
+      addLabel="Add industry"
     />
   ),
 });

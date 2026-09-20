@@ -7,6 +7,7 @@ export const Route = createFileRoute("/projects")({
       collection="projects"
       label="Projects"
       description="Portfolio items shown on the homepage and the projects page."
+      addLabel="Add project"
     />
   ),
 });

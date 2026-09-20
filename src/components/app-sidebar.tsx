@@ -1,5 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
+  BarChart3,
   LayoutDashboard,
   Inbox,
   MessageCircle,
@@ -14,19 +15,24 @@ import {
   Settings,
   LogOut,
   ExternalLink,
-  Sun,
-  Moon,
   X,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/store/auth";
-import { useTheme } from "@/store/theme";
+import { api } from "@/services/http";
+import type { Lead } from "@/services/domain-types";
 import { cn } from "@/lib/utils";
 
+/** Groups and order follow the mockup's `nav` array; Analytics sits directly
+ * under Dashboard in OVERVIEW. Screens the mockup has but this build has no
+ * backend for (SEO, Marketing & pixels, Media buying) are omitted — their real
+ * fields live in Site settings. */
 const NAV: { group: string; items: { to: string; label: string; icon: React.ElementType }[] }[] = [
   {
     group: "OVERVIEW",
     items: [
       { to: "/", label: "Overview", icon: LayoutDashboard },
+      { to: "/analytics", label: "Analytics", icon: BarChart3 },
       { to: "/inbox", label: "Inbox", icon: Inbox },
       { to: "/chat", label: "Live chat", icon: MessageCircle },
     ],
@@ -40,7 +46,7 @@ const NAV: { group: string; items: { to: string; label: string; icon: React.Elem
       { to: "/blogPosts", label: "Articles", icon: Newspaper },
       { to: "/testimonials", label: "Testimonials", icon: Quote },
       { to: "/faqs", label: "FAQ", icon: HelpCircle },
-      { to: "/aboutSections", label: "About sections", icon: User2 },
+      { to: "/aboutSections", label: "About / founder", icon: User2 },
     ],
   },
   {
@@ -52,6 +58,11 @@ const NAV: { group: string; items: { to: string; label: string; icon: React.Elem
   },
 ];
 
+/** Route → header title, mirroring the mockup's `titles` map. */
+export const SCREEN_TITLES: Record<string, string> = Object.fromEntries([
+  ...NAV.flatMap((s) => s.items.map((i) => [i.to, i.label])),
+]);
+
 /**
  * Fixed rail from `lg` up; below that it's an off-canvas drawer the top bar's
  * hamburger opens (`open` / `onClose` are owned by the root route).
@@ -60,7 +71,24 @@ export function AppSidebar({ open = false, onClose }: { open?: boolean; onClose?
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const logout = useAuth((s) => s.logout);
   const user = useAuth((s) => s.user);
-  const { theme, toggle } = useTheme();
+  const [newLeads, setNewLeads] = useState(0);
+
+  // Mirrors the mockup's Inbox badge with a real count. Refreshed on navigation
+  // so acting on a lead updates the badge without a reload.
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get<Lead[]>("/admin/leads?status=new")
+      .then((leads) => {
+        if (!cancelled) setNewLeads(leads.length);
+      })
+      .catch(() => {
+        /* the screen itself surfaces API failures; the badge just stays hidden */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname]);
 
   return (
     <>
@@ -135,8 +163,16 @@ export function AppSidebar({ open = false, onClose }: { open?: boolean; onClose?
                     color: active ? "var(--text)" : "var(--text2)",
                   }}
                 >
-                  <Icon size={17} />
-                  <span className="flex-1">{item.label}</span>
+                  <Icon size={17} className="shrink-0" />
+                  <span className="flex-1 text-left">{item.label}</span>
+                  {item.to === "/inbox" && newLeads > 0 ? (
+                    <span
+                      className="font-mono rounded-full px-[7px] py-[2px] text-[10px] text-white"
+                      style={{ background: "linear-gradient(135deg,#FF6A00,#FF0080)" }}
+                    >
+                      {newLeads}
+                    </span>
+                  ) : null}
                 </Link>
               );
             })}
@@ -145,14 +181,6 @@ export function AppSidebar({ open = false, onClose }: { open?: boolean; onClose?
       </nav>
 
       <div className="flex flex-col gap-2 border-t p-3" style={{ borderColor: "var(--border)" }}>
-        <button
-          onClick={toggle}
-          className="flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-left text-[13.5px]"
-          style={{ color: "var(--text2)" }}
-        >
-          {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-          {theme === "dark" ? "Light mode" : "Dark mode"}
-        </button>
         <a
           href={import.meta.env.VITE_SITE_URL ?? "#"}
           target="_blank"

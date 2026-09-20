@@ -22,6 +22,15 @@
   --field: #0c0c10;
   --accent-1: #ff6a00;
   --accent-2: #ff0080;
+
+  /* Chart palette — validated with the dataviz skill's checker against the
+   * dark panel surface (#111116): lightness band, chroma floor, protan/deutan
+   * separation, normal-vision floor and 3:1 contrast all pass.
+   * viz-1 = pageviews (brand orange), viz-2 = clicks (violet counter-hue). */
+  --viz-1: #e8690f;
+  --viz-2: #9b5de5;
+  --viz-grid: rgba(255, 255, 255, 0.09);
+  --viz-track: rgba(255, 255, 255, 0.07);
 }
 
 :root[data-kf-theme="light"] {
@@ -38,6 +47,12 @@
   --grid: rgba(0, 0, 0, 0.04);
   --navbg: rgba(255, 255, 255, 0.88);
   --field: #ffffff;
+
+  /* Light-mode steps of the same two hues, re-validated against #ffffff. */
+  --viz-1: #e35f00;
+  --viz-2: #7a44c9;
+  --viz-grid: rgba(0, 0, 0, 0.1);
+  --viz-track: rgba(0, 0, 0, 0.07);
 }
 
 * {
@@ -97,8 +112,30 @@ select:focus {
   }
 }
 
+@keyframes kfBar {
+  0% {
+    transform: scaleY(0);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
 .kf-scr {
   animation: kfIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Wide data tables scroll sideways rather than crushing their columns — same
+ * treatment as the mockup's `.kf-tw`. Below `md` the rows stack as cards
+ * instead, so the min-width only applies from `md` up. */
+.kf-tw {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+@media (min-width: 768px) {
+  .kf-tw > .kf-tw-inner {
+    min-width: 720px;
+  }
 }
 
 .kf-row:hover {

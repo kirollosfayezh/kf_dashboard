@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { api } from "@/services/http";
 import type { MediaItem } from "@/services/domain-types";
+import { ImagePlus } from "lucide-react";
 import {
+  AddButton,
   ConfirmDialog,
   EmptyState,
   ErrorBanner,
@@ -69,17 +71,13 @@ function MediaPage() {
     <div className="kf-scr">
       <SectionHead
         title="Media"
-        subtitle="Files uploaded to Storage, used across content and settings."
+        subtitle="Images and files used across content, settings and the site's own pages."
         action={
           <label>
             <input ref={fileInput} type="file" className="hidden" onChange={onUpload} disabled={uploading} />
-            <GradientButton
-              type="button"
-              disabled={uploading}
-              onClick={() => fileInput.current?.click()}
-            >
-              {uploading ? "Uploading…" : "+ Upload"}
-            </GradientButton>
+            <AddButton disabled={uploading} onClick={() => fileInput.current?.click()}>
+              {uploading ? "Uploading…" : "Upload file"}
+            </AddButton>
           </label>
         }
       />
@@ -90,7 +88,16 @@ function MediaPage() {
         </div>
       ) : null}
       {items && items.length === 0 ? (
-        <EmptyState title="No media yet" body="Uploaded images and files will appear here." />
+        <EmptyState
+          icon={<ImagePlus size={24} />}
+          title="No media yet"
+          body="Drop in a logo, a cover photo or a service image and it becomes available to every screen that takes a URL."
+          action={
+            <GradientButton type="button" disabled={uploading} onClick={() => fileInput.current?.click()}>
+              {uploading ? "Uploading…" : "Upload a file"}
+            </GradientButton>
+          }
+        />
       ) : null}
       {items && items.length > 0 ? (
         <div

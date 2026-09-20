@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutSectionsRouteImport } from './routes/aboutSections'
+import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as BlogPostsRouteImport } from './routes/blogPosts'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as FaqsRouteImport } from './routes/faqs'
@@ -31,6 +32,11 @@ const IndexRoute = IndexRouteImport.update({
 const AboutSectionsRoute = AboutSectionsRouteImport.update({
   id: '/aboutSections',
   path: '/aboutSections',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalyticsRoute = AnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogPostsRoute = BlogPostsRouteImport.update({
@@ -92,6 +98,7 @@ const TestimonialsRoute = TestimonialsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/aboutSections': typeof AboutSectionsRoute
+  '/analytics': typeof AnalyticsRoute
   '/blogPosts': typeof BlogPostsRoute
   '/chat': typeof ChatRoute
   '/faqs': typeof FaqsRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/aboutSections': typeof AboutSectionsRoute
+  '/analytics': typeof AnalyticsRoute
   '/blogPosts': typeof BlogPostsRoute
   '/chat': typeof ChatRoute
   '/faqs': typeof FaqsRoute
@@ -123,6 +131,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/aboutSections': typeof AboutSectionsRoute
+  '/analytics': typeof AnalyticsRoute
   '/blogPosts': typeof BlogPostsRoute
   '/chat': typeof ChatRoute
   '/faqs': typeof FaqsRoute
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/aboutSections'
+    | '/analytics'
     | '/blogPosts'
     | '/chat'
     | '/faqs'
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/aboutSections'
+    | '/analytics'
     | '/blogPosts'
     | '/chat'
     | '/faqs'
@@ -170,6 +181,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/aboutSections'
+    | '/analytics'
     | '/blogPosts'
     | '/chat'
     | '/faqs'
@@ -186,6 +198,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutSectionsRoute: typeof AboutSectionsRoute
+  AnalyticsRoute: typeof AnalyticsRoute
   BlogPostsRoute: typeof BlogPostsRoute
   ChatRoute: typeof ChatRoute
   FaqsRoute: typeof FaqsRoute
@@ -213,6 +226,13 @@ declare module '@tanstack/react-router' {
       path: '/aboutSections'
       fullPath: '/aboutSections'
       preLoaderRoute: typeof AboutSectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analytics': {
+      id: '/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blogPosts': {
@@ -298,6 +318,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutSectionsRoute: AboutSectionsRoute,
+  AnalyticsRoute: AnalyticsRoute,
   BlogPostsRoute: BlogPostsRoute,
   ChatRoute: ChatRoute,
   FaqsRoute: FaqsRoute,

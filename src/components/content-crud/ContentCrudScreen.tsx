@@ -2,20 +2,28 @@ import { useEffect, useState } from "react";
 import { api } from "@/services/http";
 import type { ContentCollection, ContentItem } from "@/services/domain-types";
 import {
+  AddButton,
   Button,
   Card,
   ConfirmDialog,
+  DataTable,
   EmptyState,
   ErrorBanner,
   Field,
   GradientButton,
   Input,
+  PanelHead,
   Pill,
+  RowActions,
   SectionHead,
   Spinner,
   Textarea,
   Toggle,
 } from "@/components/ui";
+
+/** How the mockup lays each collection out: a row table, a card grid, or the
+ * numbered FAQ accordion list. */
+export type CrudLayout = "table" | "cards" | "faq";
 
 interface FormState {
   id?: string;
@@ -72,10 +80,18 @@ export function ContentCrudScreen({
   collection,
   label,
   description,
+  layout = "table",
+  addLabel,
+  singularLabel,
 }: {
   collection: ContentCollection;
   label: string;
   description: string;
+  layout?: CrudLayout;
+  /** Overrides the derived "Add <singular>" wording (e.g. "Add question"). */
+  addLabel?: string;
+  /** Overrides the singular used in the editor heading and empty state. */
+  singularLabel?: string;
 }) {
   const [items, setItems] = useState<ContentItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -140,12 +156,18 @@ export function ContentCrudScreen({
     }
   };
 
+  const singular = singularLabel ?? (label === "FAQ" ? "Question" : label.replace(/s$/, ""));
+
   return (
     <div className="kf-scr">
       <SectionHead
         title={label}
         subtitle={description}
-        action={<GradientButton onClick={() => setForm(EMPTY_FORM)}>+ Add {label.replace(/s$/, "")}</GradientButton>}
+        action={
+          <AddButton onClick={() => setForm(EMPTY_FORM)}>
+            {addLabel ?? `Add ${singular.toLowerCase()}`}
+          </AddButton>
+        }
       />
       {error ? <ErrorBanner message={error} /> : null}
 
@@ -156,63 +178,126 @@ export function ContentCrudScreen({
       ) : null}
 
       {items && items.length === 0 ? (
-        <EmptyState title={`No ${label.toLowerCase()} yet`} body="Add the first item to see it here." />
+        <EmptyState
+          title={`No ${label.toLowerCase()} yet`}
+          body={`Add the first ${singular.toLowerCase()} and it will appear here — and on the site as soon as you publish it.`}
+        />
       ) : null}
 
-      {items && items.length > 0 ? (
+      {items && items.length > 0 && layout === "table" ? (
+        <DataTable
+          columns={[
+            { label: "Order", w: "0.5fr" },
+            { label: "Title", w: "2.2fr" },
+            { label: "Slug", w: "1.2fr" },
+            { label: "Status", w: "1fr" },
+            { label: "", w: "90px", hideOnMobile: true },
+          ]}
+          rowKey={(i) => items[i].id}
+          rows={items.map((item) => [
+            <span className="font-mono text-[12.5px]" style={{ color: "var(--text3)" }}>
+              {item.order}
+            </span>,
+            <span className="block truncate font-semibold">{item.title?.en || "(untitled)"}</span>,
+            <span className="font-mono block truncate text-[12px]" style={{ color: "var(--text3)" }}>
+              {item.slug}
+            </span>,
+            <div className="flex items-center gap-2">
+              <Toggle on={item.published} onClick={() => void togglePublished(item)} />
+              <Pill text={item.published ? "published" : "draft"} />
+            </div>,
+            <RowActions onEdit={() => setForm(toForm(item))} onDelete={() => setToDelete(item)} />,
+          ])}
+        />
+      ) : null}
+
+      {items && items.length > 0 && layout === "cards" ? (
         <div
-          className="overflow-hidden rounded-2xl border"
-          style={{ borderColor: "var(--border)", background: "var(--panel)" }}
+          className="grid gap-4"
+          style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))" }}
         >
-          {/* Column headings only make sense once the rows are actually a grid (md+). */}
-          <div
-            className="hidden gap-3.5 border-b px-5 py-3 text-[10.5px] tracking-wider md:grid md:grid-cols-[0.6fr_2.4fr_0.9fr_0.9fr_1.4fr]"
-            style={{
-              borderColor: "var(--border)",
-              background: "var(--panel2)",
-              color: "var(--text3)",
-            }}
-          >
-            <div className="font-mono">ORDER</div>
-            <div className="font-mono">TITLE</div>
-            <div className="font-mono">SLUG</div>
-            <div className="font-mono">PUBLISHED</div>
-            <div className="font-mono text-right">ACTIONS</div>
-          </div>
           {items.map((item, i) => (
-            <div
+            <Card
               key={item.id}
-              className="kf-row flex flex-col gap-2.5 px-4 py-3.5 text-[14px] md:grid md:grid-cols-[0.6fr_2.4fr_0.9fr_0.9fr_1.4fr] md:items-center md:gap-3.5 md:px-5"
-              style={{ borderBottom: i < items.length - 1 ? "1px solid var(--border)" : "none" }}
+              className="!p-4"
+              style={{
+                animation: "kfIn .5s cubic-bezier(.22,1,.36,1) both",
+                animationDelay: `${Math.min(i, 8) * 0.05}s`,
+              }}
             >
-              <div className="min-w-0">
-                <div className="flex items-baseline gap-2 md:hidden">
-                  <span className="font-mono text-[12px]" style={{ color: "var(--text3)" }}>
-                    #{item.order}
-                  </span>
-                  <span className="truncate font-semibold">{item.title?.en || "(untitled)"}</span>
-                </div>
-                <div className="font-mono hidden md:block" style={{ color: "var(--text3)" }}>
-                  {item.order}
-                </div>
+              {/* The mockup's `imgBox`: the item's first media file, or a dashed
+                  placeholder that says where an image would go. */}
+              <div
+                className="relative overflow-hidden rounded-[11px] border border-dashed"
+                style={{ aspectRatio: "16/9", background: "var(--panel2)", borderColor: "var(--bstrong)" }}
+              >
+                {item.media?.[0] ? (
+                  <img src={item.media[0]} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                ) : (
+                  <div
+                    className="absolute inset-0 grid place-items-center px-3 text-center text-[12.5px]"
+                    style={{ color: "var(--text3)" }}
+                  >
+                    No image yet
+                  </div>
+                )}
               </div>
-              <div className="hidden truncate font-semibold md:block">
-                {item.title?.en || "(untitled)"}
-              </div>
-              <div className="font-mono truncate text-[12.5px]" style={{ color: "var(--text2)" }}>
-                {item.slug}
-              </div>
-              <div className="flex items-center gap-2">
-                <Toggle on={item.published} onClick={() => void togglePublished(item)} />
+              <div className="mt-3.5 flex items-center gap-2.5">
+                <h3 className="font-display min-w-0 flex-1 truncate text-[16px] font-semibold">
+                  {item.title?.en || "(untitled)"}
+                </h3>
                 <Pill text={item.published ? "published" : "draft"} />
               </div>
-              <div className="flex gap-2 md:justify-end">
-                <Button onClick={() => setForm(toForm(item))}>Edit</Button>
-                <Button variant="danger" onClick={() => setToDelete(item)}>
-                  Delete
-                </Button>
+              <div className="font-mono mt-1.5 truncate text-[11.5px]" style={{ color: "var(--text3)" }}>
+                /{item.slug}
               </div>
-            </div>
+              <p
+                className="mt-2 line-clamp-3 min-h-[60px] text-[13.5px] leading-[1.55]"
+                style={{ color: "var(--text2)" }}
+              >
+                {item.summary?.en || item.body?.en || "No summary yet."}
+              </p>
+              <div className="mt-3.5 flex items-center gap-2">
+                <Button className="flex-1" onClick={() => setForm(toForm(item))}>
+                  Edit
+                </Button>
+                <Toggle on={item.published} onClick={() => void togglePublished(item)} />
+                <RowActions onEdit={() => setForm(toForm(item))} onDelete={() => setToDelete(item)} />
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : null}
+
+      {items && items.length > 0 && layout === "faq" ? (
+        <div className="flex flex-col gap-3">
+          {items.map((item, i) => (
+            <Card
+              key={item.id}
+              className="!p-[18px]"
+              style={{
+                animation: "kfIn .45s cubic-bezier(.22,1,.36,1) both",
+                animationDelay: `${Math.min(i, 8) * 0.05}s`,
+              }}
+            >
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="font-mono w-[22px] shrink-0 text-[11px]" style={{ color: "var(--text3)" }}>
+                  {String(i + 1).padStart(2, "0")}
+                </div>
+                <div className="min-w-0 flex-1 text-[15px] font-semibold">
+                  {item.title?.en || "(untitled)"}
+                </div>
+                <Toggle on={item.published} onClick={() => void togglePublished(item)} />
+                <Pill text={item.published ? "published" : "draft"} />
+                <RowActions onEdit={() => setForm(toForm(item))} onDelete={() => setToDelete(item)} />
+              </div>
+              <p
+                className="mt-2.5 text-[13.5px] leading-[1.6] sm:pl-[34px]"
+                style={{ color: "var(--text2)" }}
+              >
+                {item.summary?.en || item.body?.en || "No answer yet."}
+              </p>
+            </Card>
           ))}
         </div>
       ) : null}
@@ -220,9 +305,10 @@ export function ContentCrudScreen({
       {form ? (
         <div className="mt-6">
           <Card>
-            <h3 className="font-display mb-4 text-[16px] font-semibold">
-              {form.id ? `Edit ${label.replace(/s$/, "")}` : `New ${label.replace(/s$/, "")}`}
-            </h3>
+            <PanelHead
+              title={form.id ? `Edit ${singular.toLowerCase()}` : `New ${singular.toLowerCase()}`}
+              subtitle="Changes apply everywhere this item appears on the site."
+            />
             <form onSubmit={save}>
               <div className="grid gap-x-5 md:grid-cols-2">
                 <Field label="Slug">

@@ -7,6 +7,8 @@ export const Route = createFileRoute("/testimonials")({
       collection="testimonials"
       label="Testimonials"
       description="Client quotes shown on the homepage."
+      layout="cards"
+      addLabel="Add testimonial"
     />
   ),
 });
