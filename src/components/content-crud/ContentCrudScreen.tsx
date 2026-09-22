@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { api } from "@/services/http";
 import type { ContentCollection, ContentItem } from "@/services/domain-types";
+import { MediaPicker } from "@/components/MediaPicker";
 import {
   AddButton,
   Button,
   Card,
   ConfirmDialog,
   DataTable,
+  Drawer,
   EmptyState,
   ErrorBanner,
   Field,
@@ -25,29 +27,72 @@ import {
  * numbered FAQ accordion list. */
 export type CrudLayout = "table" | "cards" | "faq";
 
+/** Only used to show an editor a real URL; a missing value degrades to a
+ *  relative path rather than to a broken absolute one. */
+const SITE_URL = (import.meta.env.VITE_SITE_URL?.trim() || "").replace(/\/+$/, "");
+
+/**
+ * The languages the CMS stores. All four, not the two it used to: German and
+ * French text typed into the dashboard was accepted, saved and then silently
+ * discarded by the Mongoose schema, so `de`/`fr` readers only ever saw whatever
+ * the site's own dictionary happened to contain.
+ */
+export const CMS_LANGS = [
+  { code: "en", label: "English", dir: "ltr" },
+  { code: "ar", label: "العربية", dir: "rtl" },
+  { code: "de", label: "Deutsch", dir: "ltr" },
+  { code: "fr", label: "Français", dir: "ltr" },
+] as const;
+
+type LangCode = (typeof CMS_LANGS)[number]["code"];
+type Translated = Record<LangCode, string>;
+
+const emptyTranslated = (): Translated => ({ en: "", ar: "", de: "", fr: "" });
+const readTranslated = (v: Partial<Record<LangCode, string>> | undefined): Translated => ({
+  en: v?.en ?? "",
+  ar: v?.ar ?? "",
+  de: v?.de ?? "",
+  fr: v?.fr ?? "",
+});
+
+/** The `meta` keys this form exposes as their own inputs, beyond tag/result/points. */
+const META_TEXT_FIELDS = ["demoUrl", "repoUrl", "client", "year", "duration"] as const;
+type MetaTextField = (typeof META_TEXT_FIELDS)[number];
+
 interface FormState {
   id?: string;
   slug: string;
   published: boolean;
   order: number;
-  titleEn: string;
-  titleAr: string;
-  summaryEn: string;
-  summaryAr: string;
-  bodyEn: string;
-  bodyAr: string;
+  title: Translated;
+  summary: Translated;
+  body: Translated;
+  media: string[];
+  /** The item's existing `meta` bag, carried through untouched so a save cannot
+   *  drop keys this form does not expose. */
+  meta: Record<string, unknown>;
+  tag: string;
+  result: string;
+  points: string;
+  links: Record<MetaTextField, string>;
 }
+
+const emptyLinks = () =>
+  Object.fromEntries(META_TEXT_FIELDS.map((k) => [k, ""])) as Record<MetaTextField, string>;
 
 const EMPTY_FORM: FormState = {
   slug: "",
   published: false,
   order: 0,
-  titleEn: "",
-  titleAr: "",
-  summaryEn: "",
-  summaryAr: "",
-  bodyEn: "",
-  bodyAr: "",
+  title: emptyTranslated(),
+  summary: emptyTranslated(),
+  body: emptyTranslated(),
+  media: [],
+  meta: {},
+  tag: "",
+  result: "",
+  points: "",
+  links: emptyLinks(),
 };
 
 function toForm(item: ContentItem): FormState {
@@ -56,23 +101,59 @@ function toForm(item: ContentItem): FormState {
     slug: item.slug,
     published: item.published,
     order: item.order,
-    titleEn: item.title?.en ?? "",
-    titleAr: item.title?.ar ?? "",
-    summaryEn: item.summary?.en ?? "",
-    summaryAr: item.summary?.ar ?? "",
-    bodyEn: item.body?.en ?? "",
-    bodyAr: item.body?.ar ?? "",
+    title: readTranslated(item.title),
+    summary: readTranslated(item.summary),
+    body: readTranslated(item.body),
+    media: item.media ?? [],
+    meta: item.meta ?? {},
+    tag: typeof item.meta?.tag === "string" ? item.meta.tag : "",
+    result: typeof item.meta?.result === "string" ? item.meta.result : "",
+    points: Array.isArray(item.meta?.points)
+      ? (item.meta.points as unknown[]).filter((x): x is string => typeof x === "string").join("\n")
+      : "",
+    links: Object.fromEntries(
+      META_TEXT_FIELDS.map((k) => [k, typeof item.meta?.[k] === "string" ? (item.meta[k] as string) : ""]),
+    ) as Record<MetaTextField, string>,
   };
 }
 
 function toPayload(form: FormState) {
+  const points = form.points
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  /**
+   * `meta` is spread from the item's existing bag before the edited keys are
+   * applied.
+   *
+   * The API PATCHes with `findByIdAndUpdate`, which `$set`s the whole `meta`
+   * path rather than merging it — so sending only the fields this form knows
+   * about would silently wipe every other key the seeder wrote (`alt`, and
+   * anything added later). Read-merge-write is the only safe shape here.
+   */
+  const meta: Record<string, unknown> = { ...form.meta, points };
+  if (form.tag.trim()) meta.tag = form.tag.trim();
+  else delete meta.tag;
+  if (form.result.trim()) meta.result = form.result.trim();
+  else delete meta.result;
+  // An empty input clears the key rather than storing "" — the site tests these
+  // for presence to decide whether to render a button at all.
+  for (const k of META_TEXT_FIELDS) {
+    const v = form.links[k].trim();
+    if (v) meta[k] = v;
+    else delete meta[k];
+  }
+
   return {
     slug: form.slug.trim(),
     published: form.published,
     order: Number(form.order) || 0,
-    title: { en: form.titleEn, ar: form.titleAr },
-    summary: { en: form.summaryEn, ar: form.summaryAr },
-    body: { en: form.bodyEn, ar: form.bodyAr },
+    title: form.title,
+    summary: form.summary,
+    body: form.body,
+    media: form.media,
+    meta,
   };
 }
 
@@ -96,6 +177,7 @@ export function ContentCrudScreen({
   const [items, setItems] = useState<ContentItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<FormState | null>(null);
+  const [activeLang, setActiveLang] = useState<LangCode>("en");
   const [saving, setSaving] = useState(false);
   const [toDelete, setToDelete] = useState<ContentItem | null>(null);
 
@@ -114,6 +196,14 @@ export function ContentCrudScreen({
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [collection]);
+
+  const setLink = (key: MetaTextField, value: string) =>
+    setForm((f) => (f ? { ...f, links: { ...f.links, [key]: value } } : f));
+
+  const openForm = (next: FormState) => {
+    setActiveLang("en");
+    setForm(next);
+  };
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,7 +254,7 @@ export function ContentCrudScreen({
         title={label}
         subtitle={description}
         action={
-          <AddButton onClick={() => setForm(EMPTY_FORM)}>
+          <AddButton onClick={() => openForm(EMPTY_FORM)}>
             {addLabel ?? `Add ${singular.toLowerCase()}`}
           </AddButton>
         }
@@ -206,7 +296,7 @@ export function ContentCrudScreen({
               <Toggle on={item.published} onClick={() => void togglePublished(item)} />
               <Pill text={item.published ? "published" : "draft"} />
             </div>,
-            <RowActions onEdit={() => setForm(toForm(item))} onDelete={() => setToDelete(item)} />,
+            <RowActions onEdit={() => openForm(toForm(item))} onDelete={() => setToDelete(item)} />,
           ])}
         />
       ) : null}
@@ -258,11 +348,11 @@ export function ContentCrudScreen({
                 {item.summary?.en || item.body?.en || "No summary yet."}
               </p>
               <div className="mt-3.5 flex items-center gap-2">
-                <Button className="flex-1" onClick={() => setForm(toForm(item))}>
+                <Button className="flex-1" onClick={() => openForm(toForm(item))}>
                   Edit
                 </Button>
                 <Toggle on={item.published} onClick={() => void togglePublished(item)} />
-                <RowActions onEdit={() => setForm(toForm(item))} onDelete={() => setToDelete(item)} />
+                <RowActions onEdit={() => openForm(toForm(item))} onDelete={() => setToDelete(item)} />
               </div>
             </Card>
           ))}
@@ -289,7 +379,7 @@ export function ContentCrudScreen({
                 </div>
                 <Toggle on={item.published} onClick={() => void togglePublished(item)} />
                 <Pill text={item.published ? "published" : "draft"} />
-                <RowActions onEdit={() => setForm(toForm(item))} onDelete={() => setToDelete(item)} />
+                <RowActions onEdit={() => openForm(toForm(item))} onDelete={() => setToDelete(item)} />
               </div>
               <p
                 className="mt-2.5 text-[13.5px] leading-[1.6] sm:pl-[34px]"
@@ -302,91 +392,244 @@ export function ContentCrudScreen({
         </div>
       ) : null}
 
-      {form ? (
-        <div className="mt-6">
-          <Card>
-            <PanelHead
-              title={form.id ? `Edit ${singular.toLowerCase()}` : `New ${singular.toLowerCase()}`}
-              subtitle="Changes apply everywhere this item appears on the site."
-            />
-            <form onSubmit={save}>
-              <div className="grid gap-x-5 md:grid-cols-2">
-                <Field label="Slug">
-                  <Input
-                    required
-                    value={form.slug}
-                    onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                    placeholder="my-item-slug"
+      {/* The editor is a sheet, not a card appended after the list. It used to
+          render below every item with no scroll or focus change, so on a long
+          collection tapping Edit appeared to do nothing at all. */}
+      <Drawer
+        open={!!form}
+        onClose={() => setForm(null)}
+        width="lg"
+        title={form?.id ? `Edit ${singular.toLowerCase()}` : `New ${singular.toLowerCase()}`}
+        subtitle="Changes apply everywhere this item appears on the site."
+        footer={
+          <div className="flex gap-2.5">
+            <GradientButton type="submit" form="kf-content-form" disabled={saving}>
+              {saving ? "Saving…" : "Save"}
+            </GradientButton>
+            <Button type="button" variant="ghost" onClick={() => setForm(null)}>
+              Cancel
+            </Button>
+          </div>
+        }
+      >
+        {form ? (
+          <form id="kf-content-form" onSubmit={save}>
+            <div
+              className="grid gap-x-5"
+              style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))" }}
+            >
+              <Field label="Slug" hint="The URL segment. Lowercase, dashes, no spaces.">
+                <Input
+                  required
+                  value={form.slug}
+                  onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                  placeholder="my-item-slug"
+                />
+              </Field>
+              <Field label="Order" hint="Lower numbers appear first.">
+                <Input
+                  type="number"
+                  value={form.order}
+                  onChange={(e) => setForm({ ...form, order: Number(e.target.value) })}
+                />
+              </Field>
+            </div>
+
+            {/*
+              One tab per language instead of eight stacked inputs. The old form
+              showed English and Arabic side by side, which already overflowed a
+              phone; four languages that way would be unusable. The dot on a tab
+              says whether that language has a title yet, so an untranslated
+              item is visible without opening every tab.
+            */}
+            <div className="mb-1.5 text-[12.5px] font-semibold" style={{ color: "var(--text2)" }}>
+              Content
+            </div>
+            <div
+              className="mb-3 flex overflow-hidden rounded-[9px] border"
+              style={{ borderColor: "var(--border)" }}
+              role="tablist"
+              aria-label="Content language"
+            >
+              {CMS_LANGS.map((l) => (
+                <button
+                  key={l.code}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeLang === l.code}
+                  onClick={() => setActiveLang(l.code)}
+                  className="flex flex-1 items-center justify-center gap-1.5 px-2 py-2 text-[12.5px] font-semibold"
+                  style={{
+                    background: activeLang === l.code ? "rgba(255,106,0,.12)" : "transparent",
+                    color: activeLang === l.code ? "var(--text)" : "var(--text2)",
+                  }}
+                >
+                  {l.label}
+                  <span
+                    aria-hidden="true"
+                    title={form.title[l.code].trim() ? "Translated" : "Empty"}
+                    className="h-[6px] w-[6px] shrink-0 rounded-full"
+                    style={{
+                      background: form.title[l.code].trim() ? "#4ADE80" : "var(--bstrong)",
+                    }}
                   />
-                </Field>
-                <Field label="Order">
-                  <Input
-                    type="number"
-                    value={form.order}
-                    onChange={(e) => setForm({ ...form, order: Number(e.target.value) })}
-                  />
-                </Field>
-                <Field label="Title (EN)">
-                  <Input
-                    required
-                    value={form.titleEn}
-                    onChange={(e) => setForm({ ...form, titleEn: e.target.value })}
-                  />
-                </Field>
-                <Field label="Title (AR)">
-                  <Input
-                    dir="rtl"
-                    value={form.titleAr}
-                    onChange={(e) => setForm({ ...form, titleAr: e.target.value })}
-                  />
-                </Field>
-                <Field label="Summary (EN)">
-                  <Textarea
-                    rows={3}
-                    value={form.summaryEn}
-                    onChange={(e) => setForm({ ...form, summaryEn: e.target.value })}
-                  />
-                </Field>
-                <Field label="Summary (AR)">
-                  <Textarea
-                    dir="rtl"
-                    rows={3}
-                    value={form.summaryAr}
-                    onChange={(e) => setForm({ ...form, summaryAr: e.target.value })}
-                  />
-                </Field>
-                <Field label="Body (EN)">
-                  <Textarea
-                    rows={6}
-                    value={form.bodyEn}
-                    onChange={(e) => setForm({ ...form, bodyEn: e.target.value })}
-                  />
-                </Field>
-                <Field label="Body (AR)">
-                  <Textarea
-                    dir="rtl"
-                    rows={6}
-                    value={form.bodyAr}
-                    onChange={(e) => setForm({ ...form, bodyAr: e.target.value })}
-                  />
-                </Field>
-              </div>
-              <label className="mb-4 flex items-center gap-2.5 text-[13.5px] font-medium">
-                <Toggle on={form.published} onClick={() => setForm({ ...form, published: !form.published })} />
-                Published
-              </label>
-              <div className="flex gap-2.5">
-                <GradientButton type="submit" disabled={saving}>
-                  {saving ? "Saving…" : "Save"}
-                </GradientButton>
-                <Button type="button" variant="ghost" onClick={() => setForm(null)}>
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </Card>
-        </div>
-      ) : null}
+                </button>
+              ))}
+            </div>
+
+            {(() => {
+              const l = CMS_LANGS.find((x) => x.code === activeLang) ?? CMS_LANGS[0];
+              const set = (key: "title" | "summary" | "body", value: string) =>
+                setForm({ ...form, [key]: { ...form[key], [l.code]: value } });
+              return (
+                <div key={l.code}>
+                  <Field
+                    label="Title"
+                    hint={
+                      l.code === "en"
+                        ? "Required. Every other language falls back to this one."
+                        : `Leave blank to show the English title to ${l.label} readers.`
+                    }
+                  >
+                    <Input
+                      required={l.code === "en"}
+                      dir={l.dir}
+                      value={form.title[l.code]}
+                      onChange={(e) => set("title", e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Summary" hint="The short line on cards and in search results.">
+                    <Textarea
+                      rows={3}
+                      dir={l.dir}
+                      value={form.summary[l.code]}
+                      onChange={(e) => set("summary", e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Body">
+                    <Textarea
+                      rows={8}
+                      dir={l.dir}
+                      value={form.body[l.code]}
+                      onChange={(e) => set("body", e.target.value)}
+                    />
+                  </Field>
+                </div>
+              );
+            })()}
+
+            <MediaPicker value={form.media} onChange={(media) => setForm({ ...form, media })} />
+
+            {/* These three drive real layout on the site — the eyebrow chip, the
+                bullet/tech list and the result badge — and were previously only
+                settable by re-running the seeder. */}
+            <div
+              className="grid gap-x-5"
+              style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))" }}
+            >
+              <Field label="Tag" hint="The small label above the title on cards.">
+                <Input
+                  value={form.tag}
+                  onChange={(e) => setForm({ ...form, tag: e.target.value })}
+                  placeholder="e.g. POS System"
+                />
+              </Field>
+              <Field label="Result" hint="The short outcome line on a project card.">
+                <Input
+                  value={form.result}
+                  onChange={(e) => setForm({ ...form, result: e.target.value })}
+                  placeholder="e.g. 30% less stock waste"
+                />
+              </Field>
+            </div>
+            <Field label="Bullet points" hint="One per line — the tech stack on a project, the feature list elsewhere.">
+              <Textarea
+                rows={4}
+                value={form.points}
+                onChange={(e) => setForm({ ...form, points: e.target.value })}
+                placeholder={"React\nNode.js\nPostgreSQL"}
+              />
+            </Field>
+
+            {/*
+              Projects only. Every other collection would just carry five empty
+              keys, and the site reads these solely from a project.
+            */}
+            {collection === "projects" ? (
+              <>
+                <div
+                  className="mb-2 mt-1 border-t pt-4 text-[12.5px] font-semibold"
+                  style={{ borderColor: "var(--border)", color: "var(--text2)" }}
+                >
+                  Project details
+                </div>
+                <div
+                  className="grid gap-x-5"
+                  style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))" }}
+                >
+                  <Field label="Live demo URL" hint="Shown as a 'Live demo' button. Leave blank to hide it.">
+                    <Input
+                      type="url"
+                      inputMode="url"
+                      value={form.links.demoUrl}
+                      onChange={(e) => setLink("demoUrl", e.target.value)}
+                      placeholder="https://demo.example.com"
+                    />
+                  </Field>
+                  <Field label="Repository URL" hint="GitHub, GitLab — shown as a 'Source' button.">
+                    <Input
+                      type="url"
+                      inputMode="url"
+                      value={form.links.repoUrl}
+                      onChange={(e) => setLink("repoUrl", e.target.value)}
+                      placeholder="https://github.com/you/project"
+                    />
+                  </Field>
+                  <Field label="Client" hint="Who it was built for. Leave blank if it is under NDA.">
+                    <Input
+                      value={form.links.client}
+                      onChange={(e) => setLink("client", e.target.value)}
+                      placeholder="e.g. Cairo Bistro Group"
+                    />
+                  </Field>
+                  <Field label="Year">
+                    <Input
+                      inputMode="numeric"
+                      value={form.links.year}
+                      onChange={(e) => setLink("year", e.target.value)}
+                      placeholder="2026"
+                    />
+                  </Field>
+                  <Field label="Duration">
+                    <Input
+                      value={form.links.duration}
+                      onChange={(e) => setLink("duration", e.target.value)}
+                      placeholder="e.g. 10 weeks"
+                    />
+                  </Field>
+                </div>
+                <div
+                  className="mb-4 rounded-[11px] border px-[14px] py-3 text-[12.5px]"
+                  style={{ borderColor: "var(--border)", background: "var(--panel2)", color: "var(--text3)" }}
+                >
+                  Case study page:{" "}
+                  <span className="font-mono" style={{ color: "var(--text2)" }}>
+                    {`${SITE_URL}/projects/${form.slug.trim() || "your-slug"}`}
+                  </span>
+                  <br />
+                  Built from the fields above — the body becomes the write-up. It goes live with
+                  the project itself, so nothing extra to publish.
+                </div>
+              </>
+            ) : null}
+
+            <label className="flex items-center gap-2.5 text-[13.5px] font-medium">
+              <Toggle on={form.published} onClick={() => setForm({ ...form, published: !form.published })} />
+              Published
+            </label>
+          </form>
+        ) : null}
+      </Drawer>
 
       <ConfirmDialog
         open={!!toDelete}

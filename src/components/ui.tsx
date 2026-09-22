@@ -1,6 +1,24 @@
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+/**
+ * Renders overlays into `document.body`.
+ *
+ * Every screen is wrapped in `.kf-scr`, which runs `animation: kfIn … both`.
+ * The fill mode leaves that animation's transform applied forever, and *any*
+ * transform makes an element the containing block for `position: fixed`
+ * descendants — so an overlay rendered in place anchors to the screen wrapper
+ * instead of the viewport, landing inset and mis-sized. Portalling out of the
+ * wrapper is the fix that survives whatever a route does to its own container.
+ */
+function Overlay({ children }: React.PropsWithChildren) {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+  return createPortal(children, document.body);
+}
 
 /** Small, hand-rolled primitives styled to match the KF brand mockup (Dashboard.dc.html) —
  * dark panels, orange→pink gradient accents, Space Grotesk headings, JetBrains Mono labels. */
@@ -455,6 +473,7 @@ export function ConfirmDialog({
 }) {
   if (!open) return null;
   return (
+    <Overlay>
     <div className="fixed inset-0 z-[100] grid place-items-center bg-black/60 p-4" onClick={onCancel}>
       <div
         className="w-full max-w-sm rounded-2xl border p-6"
@@ -473,32 +492,142 @@ export function ConfirmDialog({
         </div>
       </div>
     </div>
+    </Overlay>
   );
 }
 
-/** Slide-in drawer from the right, used for the inbox lead detail panel. */
+/**
+ * Slide-in sheet from the right: full-screen on a phone, a panel on desktop.
+ *
+ * Stays mounted while `open` so it can animate — it used to return `null`, which
+ * made it pop in and out. The pattern mirrors the sidebar
+ * (`app-sidebar.tsx`): a scrim plus a `translate-x` transition.
+ *
+ * `footer` is rendered in a sticky bar so Save/Cancel stay reachable without
+ * scrolling past a long form, and the header is sticky for the same reason.
+ */
 export function Drawer({
   open,
   onClose,
   children,
   title,
-}: React.PropsWithChildren<{ open: boolean; onClose: () => void; title: string }>) {
-  if (!open) return null;
+  subtitle,
+  footer,
+  width = "md",
+}: React.PropsWithChildren<{
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  subtitle?: string;
+  footer?: React.ReactNode;
+  /** `lg` fits two columns of bilingual fields; `md` suits a detail panel. */
+  width?: "md" | "lg";
+}>) {
+  const panelRef = React.useRef<HTMLDivElement>(null);
+
+  // Escape closes, and focus is kept inside while it is open — without this a
+  // Tab walks off into the page behind the scrim.
+  React.useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const focusable = panelRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  // The page behind must not scroll under the sheet on touch.
+  React.useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  // Focus the first control so typing starts in the form, not the page behind.
+  React.useEffect(() => {
+    if (!open) return;
+    const id = window.setTimeout(() => {
+      panelRef.current?.querySelector<HTMLElement>("input, textarea, select, button")?.focus();
+    }, 60);
+    return () => window.clearTimeout(id);
+  }, [open]);
+
   return (
-    <div className="fixed inset-0 z-[90] flex justify-end bg-black/50" onClick={onClose}>
+    <Overlay>
       <div
-        className="kf-scrollbar h-full w-full max-w-md overflow-y-auto border-l p-6"
+        className={cn(
+          "fixed inset-0 z-[90] bg-black/55 transition-opacity duration-200",
+          open ? "opacity-100" : "pointer-events-none opacity-0",
+        )}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className={cn(
+          "fixed right-0 top-0 z-[95] flex h-dvh w-full flex-col border-l transition-transform duration-200",
+          width === "lg" ? "max-w-[760px]" : "max-w-md",
+          open ? "translate-x-0" : "translate-x-full",
+        )}
         style={{ borderColor: "var(--border)", background: "var(--panel)" }}
-        onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-5 flex items-center justify-between">
-          <h3 className="font-display text-[18px] font-semibold">{title}</h3>
-          <button onClick={onClose} className="text-2xl leading-none" style={{ color: "var(--text3)" }}>
+        <div
+          className="flex shrink-0 items-start justify-between gap-4 border-b px-5 py-4 sm:px-6"
+          style={{ borderColor: "var(--border)" }}
+        >
+          <div className="min-w-0">
+            <h3 className="font-display text-[18px] font-semibold">{title}</h3>
+            {subtitle ? (
+              <p className="mt-1 text-[13px]" style={{ color: "var(--text2)" }}>
+                {subtitle}
+              </p>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-[9px] border text-[20px] leading-none"
+            style={{ borderColor: "var(--border)", color: "var(--text2)" }}
+          >
             &times;
           </button>
         </div>
-        {children}
+
+        <div className="kf-scrollbar flex-1 overflow-y-auto px-5 py-5 sm:px-6">{children}</div>
+
+        {footer ? (
+          <div
+            className="shrink-0 border-t px-5 py-4 sm:px-6"
+            style={{ borderColor: "var(--border)", background: "var(--panel)" }}
+          >
+            {footer}
+          </div>
+        ) : null}
       </div>
-    </div>
+    </Overlay>
   );
 }

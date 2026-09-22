@@ -22,6 +22,27 @@ function MediaPage() {
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [toDelete, setToDelete] = useState<MediaItem | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  /** `navigator.clipboard` needs a secure context and can be blocked outright,
+   *  so fall back to a throwaway textarea rather than failing silently. */
+  const copyUrl = async (item: MediaItem) => {
+    try {
+      await navigator.clipboard.writeText(item.url);
+    } catch {
+      const el = document.createElement("textarea");
+      el.value = item.url;
+      el.style.position = "fixed";
+      el.style.opacity = "0";
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      el.remove();
+    }
+    setCopiedId(item.id);
+    window.setTimeout(() => setCopiedId((c) => (c === item.id ? null : c)), 1600);
+  };
+
   const fileInput = useRef<HTMLInputElement>(null);
 
   const load = async () => {
@@ -129,13 +150,26 @@ function MediaPage() {
                 <div className="truncate font-mono text-[11px]" style={{ color: "var(--text3)" }}>
                   {(item.size / 1024).toFixed(0)} KB
                 </div>
-                <button
-                  onClick={() => setToDelete(item)}
-                  className="text-[12px] font-semibold"
-                  style={{ color: "#FF6A9E" }}
-                >
-                  Delete
-                </button>
+                <div className="flex shrink-0 items-center gap-2">
+                  {/* Site settings tells people to "paste a URL from Media", but
+                      the URL was never shown or copyable here — this is the other
+                      half of that instruction. */}
+                  <button
+                    onClick={() => void copyUrl(item)}
+                    className="text-[12px] font-semibold"
+                    style={{ color: copiedId === item.id ? "#4ADE80" : "var(--text2)" }}
+                    title={item.url}
+                  >
+                    {copiedId === item.id ? "Copied" : "Copy URL"}
+                  </button>
+                  <button
+                    onClick={() => setToDelete(item)}
+                    className="text-[12px] font-semibold"
+                    style={{ color: "#FF6A9E" }}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
           ))}

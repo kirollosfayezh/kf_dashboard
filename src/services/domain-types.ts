@@ -21,6 +21,9 @@ export interface Lead extends Record<string, unknown> {
 export interface LocalizedText {
   en: string;
   ar: string;
+  /** Optional so existing documents, which predate these two, still type. */
+  de?: string;
+  fr?: string;
 }
 
 /** Shared shape for every "content" collection (projects, services, solutions, testimonials, faqs, blogPosts, aboutSections). */
