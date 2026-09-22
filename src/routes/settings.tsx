@@ -19,7 +19,8 @@ export const Route = createFileRoute("/settings")({
 });
 
 const KNOWN_LANGUAGES = ["en", "ar", "de", "fr"];
-const REAL_LANGUAGES = new Set(["en", "ar"]);
+// All four ship full translations now (ported from the design export).
+const REAL_LANGUAGES = new Set(["en", "ar", "de", "fr"]);
 
 function SettingsPage() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);

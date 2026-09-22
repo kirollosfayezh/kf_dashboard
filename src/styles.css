@@ -26,9 +26,17 @@
   /* Chart palette — validated with the dataviz skill's checker against the
    * dark panel surface (#111116): lightness band, chroma floor, protan/deutan
    * separation, normal-vision floor and 3:1 contrast all pass.
-   * viz-1 = pageviews (brand orange), viz-2 = clicks (violet counter-hue). */
+   * viz-1 = pageviews (brand orange), viz-2 = clicks (violet counter-hue).
+   *
+   * viz-3 / viz-4 extend the set to four for the categorical traffic-source
+   * card. Fixed order, never cycled: Organic search, Social, Direct, Referral.
+   * Re-validated as a 4-slot categorical palette — dark passes lightness band,
+   * chroma floor, CVD separation (worst adjacent ΔE 9.2 deutan / 10.3 tritan),
+   * the normal-vision floor (19.7) and 3:1 contrast. */
   --viz-1: #e8690f;
   --viz-2: #9b5de5;
+  --viz-3: #1f7fa8;
+  --viz-4: #6fa52b;
   --viz-grid: rgba(255, 255, 255, 0.09);
   --viz-track: rgba(255, 255, 255, 0.07);
 }
@@ -48,9 +56,13 @@
   --navbg: rgba(255, 255, 255, 0.88);
   --field: #ffffff;
 
-  /* Light-mode steps of the same two hues, re-validated against #ffffff. */
+  /* Light-mode steps of the same four hues, re-validated against #ffffff —
+   * selected for this surface, not flipped from dark. Worst adjacent ΔE 8.5
+   * deutan / 9.8 tritan, normal-vision floor 17.4, all contrast >= 3:1. */
   --viz-1: #e35f00;
   --viz-2: #7a44c9;
+  --viz-3: #0f6b96;
+  --viz-4: #5c9224;
   --viz-grid: rgba(0, 0, 0, 0.1);
   --viz-track: rgba(0, 0, 0, 0.07);
 }

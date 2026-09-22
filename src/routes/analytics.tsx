@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, Download } from "lucide-react";
 import {
+  classifySources,
+  delta,
   fetchSummary,
   fillDaily,
+  summaryToCsv,
   type AnalyticsRange,
   type AnalyticsSummary,
 } from "@/services/analytics";
@@ -12,6 +15,8 @@ import {
   RankTable,
   RankedBars,
   ScrollTable,
+  SourceShareBars,
+  SourceShareTable,
   TrendChart,
   TrendTable,
   VIZ_1,
@@ -25,7 +30,23 @@ export const Route = createFileRoute("/analytics")({
   component: AnalyticsPage,
 });
 
-const RANGES: AnalyticsRange[] = [7, 30, 90];
+const RANGES: { days: AnalyticsRange; label: string }[] = [
+  { days: 7, label: "7 days" },
+  { days: 30, label: "30 days" },
+  { days: 90, label: "90 days" },
+  { days: 365, label: "1 year" },
+];
+
+/** Triggers a client-side download without a round trip to the server. */
+function downloadCsv(data: AnalyticsSummary) {
+  const blob = new Blob([summaryToCsv(data)], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `kf-analytics-${data.range.from}-to-${data.range.to}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 /** `hero.start-project` → `hero · start project`, so the list is readable at a glance. */
 function prettyControl(label: string): string {
@@ -84,6 +105,11 @@ function AnalyticsPage() {
     label: hostOf(r.referrer),
     value: r.count,
   }));
+  // Channel buckets rather than raw hosts — "where does traffic come from?" is
+  // a four-answer question, not a twenty-host list. Raw hosts stay available in
+  // the Referrers card below.
+  const sourceRows = data ? classifySources(data.topReferrers, data.totals.pageviews) : [];
+
   const deviceRows: RankRow[] = (data?.devices ?? []).map((d) => ({
     label: d.device ? d.device[0].toUpperCase() + d.device.slice(1) : "Unknown",
     value: d.count,
@@ -96,25 +122,38 @@ function AnalyticsPage() {
         subtitle="Traffic and clicks recorded on the live site, straight from your own event log."
         action={
           /* One filter row above everything it scopes — every card re-reads the same slice. */
-          <div
-            className="flex shrink-0 overflow-hidden rounded-[10px] border"
-            style={{ borderColor: "var(--border)", background: "var(--panel)" }}
-          >
-            {RANGES.map((d) => (
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <div
+              className="flex overflow-hidden rounded-[10px] border"
+              style={{ borderColor: "var(--border)", background: "var(--panel)" }}
+            >
+            {RANGES.map((r) => (
               <button
-                key={d}
+                key={r.days}
                 type="button"
-                onClick={() => setDays(d)}
-                aria-pressed={days === d}
+                onClick={() => setDays(r.days)}
+                aria-pressed={days === r.days}
                 className="px-[15px] py-2.5 text-[13px] font-semibold transition-colors"
                 style={{
-                  background: days === d ? "rgba(255,106,0,.12)" : "transparent",
-                  color: days === d ? "var(--text)" : "var(--text2)",
+                  background: days === r.days ? "rgba(255,106,0,.12)" : "transparent",
+                  color: days === r.days ? "var(--text)" : "var(--text2)",
                 }}
               >
-                {d} days
+                {r.label}
               </button>
             ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => data && downloadCsv(data)}
+              disabled={!data}
+              title="Download everything on this screen as CSV"
+              className="flex shrink-0 items-center gap-2 rounded-[10px] border px-[15px] py-2.5 text-[13px] font-semibold transition-colors disabled:opacity-40"
+              style={{ borderColor: "var(--border)", background: "var(--panel)", color: "var(--text2)" }}
+            >
+              <Download size={15} />
+              Export
+            </button>
           </div>
         }
       />
@@ -156,29 +195,35 @@ function AnalyticsPage() {
             className="grid gap-4"
             style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 180px), 1fr))" }}
           >
+            {(
+              [
+                ["Pageviews", "pageviews"],
+                ["Clicks", "clicks"],
+                ["Visitors", "visitors"],
+                ["Enquiries", "leads"],
+              ] as const
+            ).map(([label, key], i) => {
+              const d = delta(data.totals[key], data.previous[key]);
+              return (
+                <StatTile
+                  key={key}
+                  label={label}
+                  value={compact(data.totals[key])}
+                  caption={d.label}
+                  captionTone={d.direction === "flat" ? "muted" : d.direction}
+                  delay={i * 0.05}
+                />
+              );
+            })}
             <StatTile
-              label="Pageviews"
-              value={compact(data.totals.pageviews)}
-              caption={`${data.range.days} days`}
-              delay={0}
-            />
-            <StatTile
-              label="Clicks"
-              value={compact(data.totals.clicks)}
-              caption={`${data.range.days} days`}
-              delay={0.05}
-            />
-            <StatTile
-              label="Visitors"
-              value={compact(data.totals.visitors)}
-              caption="unique"
-              delay={0.1}
-            />
-            <StatTile
-              label="Enquiries"
-              value={compact(data.totals.leads)}
-              caption="from the contact form"
-              delay={0.15}
+              label="Conversion"
+              value={
+                data.totals.visitors > 0
+                  ? `${Math.round((data.totals.leads / data.totals.visitors) * 1000) / 10}%`
+                  : "—"
+              }
+              caption="enquiries per visitor"
+              delay={0.2}
             />
           </div>
 
@@ -228,8 +273,14 @@ function AnalyticsPage() {
             style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))" }}
           >
             <ChartCard
+              title="Traffic sources"
+              subtitle="Share of visits by channel, grouped from the referring host."
+              chart={<SourceShareBars rows={sourceRows} />}
+              table={<SourceShareTable rows={sourceRows} />}
+            />
+            <ChartCard
               title="Referrers"
-              subtitle="Where visits came from before landing."
+              subtitle="The individual hosts behind those channels."
               chart={
                 <RankedBars
                   rows={referrerRows}
