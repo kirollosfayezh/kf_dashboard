@@ -11,6 +11,7 @@ import {
   Quote,
   HelpCircle,
   User2,
+  Scale,
   Images,
   Settings,
   LogOut,
@@ -49,6 +50,7 @@ const NAV: { group: string; items: { to: string; label: string; icon: React.Elem
       { to: "/testimonials", label: "Testimonials", icon: Quote },
       { to: "/faqs", label: "FAQ", icon: HelpCircle },
       { to: "/aboutSections", label: "About / founder", icon: User2 },
+      { to: "/legalPages", label: "Legal pages", icon: Scale },
     ],
   },
   {

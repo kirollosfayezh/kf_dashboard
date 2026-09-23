@@ -16,6 +16,7 @@ import { Route as BlogPostsRouteImport } from './routes/blogPosts'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as FaqsRouteImport } from './routes/faqs'
 import { Route as InboxRouteImport } from './routes/inbox'
+import { Route as LegalPagesRouteImport } from './routes/legalPages'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MarketingRouteImport } from './routes/marketing'
 import { Route as MediaRouteImport } from './routes/media'
@@ -59,6 +60,11 @@ const FaqsRoute = FaqsRouteImport.update({
 const InboxRoute = InboxRouteImport.update({
   id: '/inbox',
   path: '/inbox',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalPagesRoute = LegalPagesRouteImport.update({
+  id: '/legalPages',
+  path: '/legalPages',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -115,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/chat': typeof ChatRoute
   '/faqs': typeof FaqsRoute
   '/inbox': typeof InboxRoute
+  '/legalPages': typeof LegalPagesRoute
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
   '/media': typeof MediaRoute
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/chat': typeof ChatRoute
   '/faqs': typeof FaqsRoute
   '/inbox': typeof InboxRoute
+  '/legalPages': typeof LegalPagesRoute
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
   '/media': typeof MediaRoute
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   '/chat': typeof ChatRoute
   '/faqs': typeof FaqsRoute
   '/inbox': typeof InboxRoute
+  '/legalPages': typeof LegalPagesRoute
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
   '/media': typeof MediaRoute
@@ -172,6 +181,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/faqs'
     | '/inbox'
+    | '/legalPages'
     | '/login'
     | '/marketing'
     | '/media'
@@ -190,6 +200,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/faqs'
     | '/inbox'
+    | '/legalPages'
     | '/login'
     | '/marketing'
     | '/media'
@@ -208,6 +219,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/faqs'
     | '/inbox'
+    | '/legalPages'
     | '/login'
     | '/marketing'
     | '/media'
@@ -227,6 +239,7 @@ export interface RootRouteChildren {
   ChatRoute: typeof ChatRoute
   FaqsRoute: typeof FaqsRoute
   InboxRoute: typeof InboxRoute
+  LegalPagesRoute: typeof LegalPagesRoute
   LoginRoute: typeof LoginRoute
   MarketingRoute: typeof MarketingRoute
   MediaRoute: typeof MediaRoute
@@ -287,6 +300,13 @@ declare module '@tanstack/react-router' {
       path: '/inbox'
       fullPath: '/inbox'
       preLoaderRoute: typeof InboxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legalPages': {
+      id: '/legalPages'
+      path: '/legalPages'
+      fullPath: '/legalPages'
+      preLoaderRoute: typeof LegalPagesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -363,6 +383,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatRoute: ChatRoute,
   FaqsRoute: FaqsRoute,
   InboxRoute: InboxRoute,
+  LegalPagesRoute: LegalPagesRoute,
   LoginRoute: LoginRoute,
   MarketingRoute: MarketingRoute,
   MediaRoute: MediaRoute,
