@@ -1,27 +1,182 @@
 @import "tailwindcss";
 
-@theme {
+/* ============================================================================
+   Design tokens
+   ============================================================================
+
+   Two layers, on purpose.
+
+   Layer 1 (`@theme static`) holds only *bindings* — every value is a `var()`
+   pointing into layer 2. That is what makes runtime theme switching work:
+   Tailwind emits the token into `:root, :host` and every generated utility
+   references it through `var()`, so redefining the underlying `--kf-*` value
+   under `[data-kf-theme="light"]` re-resolves `bg-panel` with no JS.
+
+   Layer 2 holds the actual values, once per theme.
+
+   Four things about Tailwind 4 that are not obvious and each break light mode
+   silently if ignored — all verified against the installed compiler (4.3.3):
+
+   1. `@theme static`, not `@theme`. Plain `@theme` tree-shakes any token whose
+      utility never appears in a class string, which leaves the variable
+      undefined in dark and defined in light — invisible until someone flips the
+      theme.
+   2. `--shadow-*` is normally *inlined* into the utility, because Tailwind
+      rewrites shadow values to splice in `var(--tw-shadow-color, …)`. A bare
+      `var()` value bypasses that rewrite; without it, overriding a shadow in
+      the light block does nothing.
+   3. `--color-X` silently wins over `--text-X`. So the colour vocabulary is
+      named after material (panel, ink, line) and the type scale after role
+      (body, caption, label) — the two sets must never intersect.
+   4. Alpha modifiers multiply. `text-muted/70` on a token that is already 66%
+      opaque gives 46%, not 70%. House rule: never put an alpha modifier on
+      `muted`, `faint`, `line`, `line-strong`, `hover`, `grid` or `nav`. The
+      tokens meant to take one — brand, semantic and viz — are all opaque.
+   ========================================================================= */
+
+@theme static {
   --font-display: "Space Grotesk", system-ui, sans-serif;
   --font-body: "Instrument Sans", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* -- surfaces ------------------------------------------------------------ */
+  --color-bg: var(--kf-bg);
+  --color-bg-alt: var(--kf-bg-alt);
+  --color-panel: var(--kf-panel);
+  --color-raised: var(--kf-raised);
+  --color-field: var(--kf-field);
+  --color-nav: var(--kf-nav);
+  --color-hover: var(--kf-hover);
+  --color-grid: var(--kf-grid);
+
+  /* -- ink ----------------------------------------------------------------- */
+  --color-ink: var(--kf-ink);
+  --color-muted: var(--kf-muted);
+  --color-faint: var(--kf-faint);
+
+  /* -- lines --------------------------------------------------------------- */
+  --color-line: var(--kf-line);
+  --color-line-strong: var(--kf-line-strong);
+
+  /* -- brand --------------------------------------------------------------- */
+  /* The two gradient stops are identical in both themes: the gradient is the
+     brand and must not shift. `brand-ink` is the separate token for brand used
+     as *text* — #FF6A00 on the light background is ~2.8:1 and fails AA. */
+  --color-brand-1: var(--kf-brand-1);
+  --color-brand-2: var(--kf-brand-2);
+  --color-brand-ink: var(--kf-brand-ink);
+  --color-brand-tint: var(--kf-brand-tint);
+  --color-brand-edge: var(--kf-brand-edge);
+
+  /* -- semantic state ------------------------------------------------------ */
+  --color-success: var(--kf-success);
+  --color-success-bg: var(--kf-success-bg);
+  --color-warning: var(--kf-warning);
+  --color-warning-bg: var(--kf-warning-bg);
+  --color-danger: var(--kf-danger);
+  --color-danger-bg: var(--kf-danger-bg);
+  --color-info: var(--kf-info);
+  --color-info-bg: var(--kf-info-bg);
+
+  /* -- data visualisation -------------------------------------------------- */
+  --color-viz-1: var(--kf-viz-1);
+  --color-viz-2: var(--kf-viz-2);
+  --color-viz-3: var(--kf-viz-3);
+  --color-viz-4: var(--kf-viz-4);
+  --color-viz-grid: var(--kf-viz-grid);
+  --color-viz-track: var(--kf-viz-track);
+
+  /* -- type scale ---------------------------------------------------------- */
+  /* Seven steps replacing twenty-one ad-hoc sizes. Each carries its own
+     line-height, tracking and weight, so one class replaces the
+     `text-[13.5px] font-semibold tracking-[-.01em]` triples this file used to
+     require everywhere. */
+  --text-display: 28px;
+  --text-display--line-height: 1.1;
+  --text-display--letter-spacing: -0.02em;
+  --text-display--font-weight: 700;
+
+  --text-title: 22px;
+  --text-title--line-height: 1.2;
+  --text-title--letter-spacing: -0.02em;
+  --text-title--font-weight: 600;
+
+  --text-section: 17px;
+  --text-section--line-height: 1.3;
+  --text-section--letter-spacing: -0.01em;
+  --text-section--font-weight: 600;
+
+  --text-body: 14px;
+  --text-body--line-height: 1.55;
+
+  --text-ui: 13px;
+  --text-ui--line-height: 1.4;
+  --text-ui--font-weight: 500;
+
+  --text-caption: 12px;
+  --text-caption--line-height: 1.45;
+
+  /* Weight 500, not 600: index.html loads JetBrains Mono at 400;500 only, so a
+     600 here would be synthesised and render as smeared faux-bold at 11px. */
+  --text-label: 11px;
+  --text-label--line-height: 1.3;
+  --text-label--letter-spacing: 0.08em;
+  --text-label--font-weight: 500;
+
+  /* -- radius -------------------------------------------------------------- */
+  --radius-xs: 8px;
+  --radius-control: 10px;
+  --radius-card: 16px;
+
+  /* -- sizing -------------------------------------------------------------- */
+  /* Routed through --kf-* so a compact density is a three-line override rather
+     than a change to every component. */
+  --spacing-control: var(--kf-control-h);
+  --spacing-control-sm: var(--kf-control-sm-h);
+  --spacing-row: var(--kf-row-h);
+  --container-page: 1400px;
+
+  /* -- elevation ----------------------------------------------------------- */
+  /* Deliberately minimal: this design separates planes by value step
+     (bg → panel → raised → field) plus a hairline, not by shadow. Light mode
+     is the one that needs a hint of it, because panel and bg are 3% apart. */
+  --shadow-card: var(--kf-shadow-card);
+  --shadow-overlay: var(--kf-shadow-overlay);
 }
 
+/* ---------------------------------------------------------------- values -- */
+
 :root {
-  --bg: #0a0a0d;
-  --bg2: #0c0c10;
-  --panel: #111116;
-  --panel2: #131318;
-  --border: rgba(255, 255, 255, 0.08);
-  --bstrong: rgba(255, 255, 255, 0.14);
-  --text: #ffffff;
-  --text2: rgba(255, 255, 255, 0.66);
-  --text3: rgba(255, 255, 255, 0.46);
-  --hover: rgba(255, 255, 255, 0.06);
-  --grid: rgba(255, 255, 255, 0.03);
-  --navbg: rgba(10, 10, 13, 0.82);
-  --field: #0c0c10;
-  --accent-1: #ff6a00;
-  --accent-2: #ff0080;
+  --kf-bg: #0a0a0d;
+  --kf-bg-alt: #0c0c10;
+  --kf-panel: #111116;
+  --kf-raised: #131318;
+  --kf-field: #0c0c10;
+  --kf-nav: #0a0a0dd1;
+  --kf-hover: #ffffff0f;
+  --kf-grid: #ffffff08;
+
+  --kf-ink: #ffffff;
+  --kf-muted: #ffffffa8;
+  --kf-faint: #ffffff75;
+
+  --kf-line: #ffffff14;
+  --kf-line-strong: #ffffff24;
+
+  --kf-brand-1: #ff6a00;
+  --kf-brand-2: #ff0080;
+  --kf-brand-ink: #ff8a3d;
+  --kf-brand-tint: #ff6a001f;
+  --kf-brand-edge: #ff6a0059;
+
+  --kf-success: #4ade80;
+  --kf-success-bg: #4ade8024;
+  --kf-warning: #ff9a4d;
+  --kf-warning-bg: #ff6a0024;
+  --kf-danger: #ff6a9e;
+  --kf-danger-bg: #ff00801f;
+  --kf-info: #7dd3fc;
+  --kf-info-bg: #7dd3fc1f;
 
   /* Chart palette — validated with the dataviz skill's checker against the
    * dark panel surface (#111116): lightness band, chroma floor, protan/deutan
@@ -32,49 +187,160 @@
    * card. Fixed order, never cycled: Organic search, Social, Direct, Referral.
    * Re-validated as a 4-slot categorical palette — dark passes lightness band,
    * chroma floor, CVD separation (worst adjacent ΔE 9.2 deutan / 10.3 tritan),
-   * the normal-vision floor (19.7) and 3:1 contrast. */
-  --viz-1: #e8690f;
-  --viz-2: #9b5de5;
-  --viz-3: #1f7fa8;
-  --viz-4: #6fa52b;
-  --viz-grid: rgba(255, 255, 255, 0.09);
-  --viz-track: rgba(255, 255, 255, 0.07);
+   * the normal-vision floor (19.7) and 3:1 contrast.
+   *
+   * Values are unchanged by the token refactor: they carry a real validation
+   * and re-deriving them would throw it away. */
+  --kf-viz-1: #e8690f;
+  --kf-viz-2: #9b5de5;
+  --kf-viz-3: #1f7fa8;
+  --kf-viz-4: #6fa52b;
+  --kf-viz-grid: #ffffff17;
+  --kf-viz-track: #ffffff12;
+
+  --kf-shadow-card: none;
+  --kf-shadow-overlay: 0 24px 60px -24px #000000b3;
+
+  --kf-focus: var(--kf-brand-ink);
+
+  /* density — see [data-kf-density] below */
+  --kf-control-h: 38px;
+  --kf-control-sm-h: 30px;
+  --kf-row-h: 52px;
 }
 
 :root[data-kf-theme="light"] {
-  --bg: #f7f7f8;
-  --bg2: #ffffff;
-  --panel: #ffffff;
-  --panel2: #f7f7f8;
-  --border: rgba(0, 0, 0, 0.09);
-  --bstrong: rgba(0, 0, 0, 0.16);
-  --text: #111111;
-  --text2: rgba(17, 17, 17, 0.66);
-  --text3: rgba(17, 17, 17, 0.5);
-  --hover: rgba(0, 0, 0, 0.05);
-  --grid: rgba(0, 0, 0, 0.04);
-  --navbg: rgba(255, 255, 255, 0.88);
-  --field: #ffffff;
+  --kf-bg: #f7f7f8;
+  --kf-bg-alt: #ffffff;
+  --kf-panel: #ffffff;
+  --kf-raised: #f7f7f8;
+  --kf-field: #ffffff;
+  --kf-nav: #ffffffe0;
+  --kf-hover: #0000000d;
+  --kf-grid: #0000000a;
+
+  --kf-ink: #111111;
+  --kf-muted: #111111a8;
+  --kf-faint: #11111180;
+
+  --kf-line: #00000017;
+  --kf-line-strong: #00000029;
+
+  /* Gradient stops stay identical; only brand-as-text darkens to pass contrast
+     on a white panel. */
+  --kf-brand-ink: #c2410c;
+  --kf-brand-tint: #ff6a001a;
+  --kf-brand-edge: #ff6a004d;
+
+  /* Re-picked for a white surface rather than inverted — the dark values sit at
+     1.7–2.3:1 on #ffffff and are unreadable. */
+  --kf-success: #15803d;
+  --kf-success-bg: #15803d1a;
+  --kf-warning: #b45309;
+  --kf-warning-bg: #b453091a;
+  --kf-danger: #c81e5b;
+  --kf-danger-bg: #c81e5b17;
+  --kf-info: #0369a1;
+  --kf-info-bg: #0369a117;
 
   /* Light-mode steps of the same four hues, re-validated against #ffffff —
    * selected for this surface, not flipped from dark. Worst adjacent ΔE 8.5
    * deutan / 9.8 tritan, normal-vision floor 17.4, all contrast >= 3:1. */
-  --viz-1: #e35f00;
-  --viz-2: #7a44c9;
-  --viz-3: #0f6b96;
-  --viz-4: #5c9224;
-  --viz-grid: rgba(0, 0, 0, 0.1);
-  --viz-track: rgba(0, 0, 0, 0.07);
+  --kf-viz-1: #e35f00;
+  --kf-viz-2: #7a44c9;
+  --kf-viz-3: #0f6b96;
+  --kf-viz-4: #5c9224;
+  --kf-viz-grid: #0000001a;
+  --kf-viz-track: #00000012;
+
+  --kf-shadow-card: 0 1px 2px #0000000a;
+  --kf-shadow-overlay: 0 24px 60px -30px #00000040;
 }
+
+/* One extra step of density, by the same mechanism as the theme. Comfortable is
+   the default; this exists so the toggle is three lines, not a component audit. */
+:root[data-kf-density="compact"] {
+  --kf-control-h: 32px;
+  --kf-control-sm-h: 26px;
+  --kf-row-h: 40px;
+}
+
+/* ---------------------------------------------------------------- legacy -- */
+/* Aliases so the ~248 call sites still written as `var(--panel)` keep rendering
+   identically while files are converted one at a time. Deleted in the final
+   commit of the refactor, once `grep -rn 'var(--panel)' src/` is empty. */
+:root,
+:root[data-kf-theme="light"] {
+  --bg: var(--kf-bg);
+  --bg2: var(--kf-bg-alt);
+  --panel: var(--kf-panel);
+  --panel2: var(--kf-raised);
+  --border: var(--kf-line);
+  --bstrong: var(--kf-line-strong);
+  --text: var(--kf-ink);
+  --text2: var(--kf-muted);
+  --text3: var(--kf-faint);
+  --hover: var(--kf-hover);
+  --grid: var(--kf-grid);
+  --navbg: var(--kf-nav);
+  --field: var(--kf-field);
+  --accent-1: var(--kf-brand-1);
+  --accent-2: var(--kf-brand-2);
+  --viz-1: var(--kf-viz-1);
+  --viz-2: var(--kf-viz-2);
+  --viz-3: var(--kf-viz-3);
+  --viz-4: var(--kf-viz-4);
+  --viz-grid: var(--kf-viz-grid);
+  --viz-track: var(--kf-viz-track);
+}
+
+/* ================================================================ utilities */
+
+/* The brand gradient, which was written out as a literal in fourteen places. */
+@utility bg-brand {
+  background-image: linear-gradient(135deg, var(--color-brand-1), var(--color-brand-2));
+}
+
+/* The softer fill behind an active nav item. */
+@utility bg-brand-soft {
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--color-brand-1) 16%, transparent),
+    color-mix(in oklab, var(--color-brand-2) 10%, transparent)
+  );
+}
+
+/* Mono eyebrow / table head / pill text — three classes that always travel
+   together, across twenty-seven sites. */
+@utility label {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  line-height: var(--text-label--line-height);
+  letter-spacing: var(--text-label--letter-spacing);
+  font-weight: var(--text-label--font-weight);
+  text-transform: uppercase;
+}
+
+/* For opting a non-semantic element into the focus ring explicitly. */
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--kf-focus);
+    outline-offset: 2px;
+  }
+}
+
+/* =================================================================== base == */
 
 * {
   box-sizing: border-box;
 }
 
 body {
-  background: var(--bg);
-  color: var(--text);
+  background: var(--color-bg);
+  color: var(--color-ink);
   font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
   -webkit-font-smoothing: antialiased;
   transition:
     background 0.4s,
@@ -82,16 +348,18 @@ body {
 }
 
 a {
-  color: var(--accent-1);
+  /* `brand-ink`, not `brand-1`: the raw orange is ~2.8:1 on the light
+     background and fails AA for text. */
+  color: var(--color-brand-ink);
   text-decoration: none;
   transition: color 0.2s;
 }
 a:hover {
-  color: var(--accent-2);
+  color: var(--color-brand-2);
 }
 
 ::selection {
-  background: rgba(255, 106, 0, 0.3);
+  background: color-mix(in oklab, var(--color-brand-1) 30%, transparent);
 }
 
 input,
@@ -102,69 +370,113 @@ button {
   color: inherit;
 }
 
-input:focus,
-textarea:focus,
-select:focus {
-  outline: none;
-  border-color: var(--accent-1) !important;
+::placeholder {
+  color: var(--color-faint);
 }
 
-::placeholder {
-  color: var(--text3);
+/* ---------------------------------------------------------------- focus --- */
+/*
+ * This file previously set `outline: none` on focused fields and
+ * `border-color: … !important`, and defined no `:focus-visible` anywhere. The
+ * effect was that the only three elements with a focus indicator lost it, and
+ * every button, link and tab in the app — the sidebar's fifteen nav links, six
+ * segmented controls, every row-action button — had none to begin with. That is
+ * a WCAG 2.4.7 failure on every screen.
+ *
+ * One ring, keyboard-only, on everything interactive. No `!important`, so a
+ * component can still override it.
+ */
+:where(
+  a[href],
+  button,
+  input,
+  textarea,
+  select,
+  summary,
+  [tabindex]:not([tabindex="-1"]),
+  [role="button"],
+  [role="tab"],
+  [role="switch"],
+  [role="link"]
+):focus-visible {
+  outline: 2px solid var(--kf-focus);
+  outline-offset: 2px;
 }
+
+/* Fields additionally take the brand border — but not instead of the ring. */
+:where(input, textarea, select):focus-visible {
+  border-color: var(--color-brand-ink);
+}
+
+/* Mouse and touch users see nothing, including from any UA default. */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Inside a clipped track — segmented controls, table wrappers — an offset ring
+   is cut off, so draw it inside the element instead. */
+.kf-clip :focus-visible {
+  outline-offset: -2px;
+}
+
+/* =============================================================== patterns == */
 
 @keyframes kfIn {
-  0% {
+  from {
     opacity: 0;
     transform: translateY(14px);
   }
-  100% {
+  to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 
-@keyframes kfBar {
-  0% {
-    transform: scaleY(0);
-  }
-  100% {
-    transform: scaleY(1);
-  }
-}
-
+/* Per-screen entrance. Note `animation-fill-mode: both` leaves a transform on
+   the element permanently, which makes it the containing block for any
+   `position: fixed` descendant — which is why overlays portal to <body>. */
 .kf-scr {
   animation: kfIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Wide data tables scroll sideways rather than crushing their columns — same
- * treatment as the mockup's `.kf-tw`. Below `md` the rows stack as cards
- * instead, so the min-width only applies from `md` up. */
+/* Wide tables scroll rather than crush. The inner element is required — without
+   it the min-width never applies. */
 .kf-tw {
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
 }
-@media (min-width: 768px) {
-  .kf-tw > .kf-tw-inner {
-    min-width: 720px;
+.kf-tw-inner {
+  min-width: 720px;
+}
+@media (max-width: 700px) {
+  .kf-tw-inner {
+    min-width: 600px;
   }
 }
 
 .kf-row:hover {
-  background: var(--hover);
+  background: var(--color-hover);
 }
 
 .kf-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 .kf-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--bstrong);
+  background: var(--color-line-strong);
   border-radius: 999px;
+}
+.kf-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
     animation: none !important;
+    /* The previous rule stopped at `animation`, leaving the drawer slide, the
+       sidebar slide and the 0.4s theme cross-fade running. */
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

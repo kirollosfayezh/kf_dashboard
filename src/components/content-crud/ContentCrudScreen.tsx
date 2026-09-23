@@ -16,6 +16,7 @@ import {
   Input,
   PanelHead,
   Pill,
+  toneForStatus,
   RowActions,
   SectionHead,
   Spinner,
@@ -285,16 +286,20 @@ export function ContentCrudScreen({
           ]}
           rowKey={(i) => items[i].id}
           rows={items.map((item) => [
-            <span className="font-mono text-[12.5px]" style={{ color: "var(--text3)" }}>
+            <span className="font-mono text-caption text-faint">
               {item.order}
             </span>,
             <span className="block truncate font-semibold">{item.title?.en || "(untitled)"}</span>,
-            <span className="font-mono block truncate text-[12px]" style={{ color: "var(--text3)" }}>
+            <span className="font-mono block truncate text-caption text-faint">
               {item.slug}
             </span>,
             <div className="flex items-center gap-2">
-              <Toggle on={item.published} onClick={() => void togglePublished(item)} />
-              <Pill text={item.published ? "published" : "draft"} />
+              <Toggle
+                checked={item.published}
+                onChange={() => void togglePublished(item)}
+                label={`${item.published ? "Unpublish" : "Publish"} ${item.title?.en || "item"}`}
+              />
+              <Pill tone={toneForStatus(item.published ? "published" : "draft")}>{item.published ? "published" : "draft"}</Pill>
             </div>,
             <RowActions onEdit={() => openForm(toForm(item))} onDelete={() => setToDelete(item)} />,
           ])}
@@ -318,32 +323,30 @@ export function ContentCrudScreen({
               {/* The mockup's `imgBox`: the item's first media file, or a dashed
                   placeholder that says where an image would go. */}
               <div
-                className="relative overflow-hidden rounded-[11px] border border-dashed"
+                className="relative overflow-hidden rounded-control border border-dashed"
                 style={{ aspectRatio: "16/9", background: "var(--panel2)", borderColor: "var(--bstrong)" }}
               >
                 {item.media?.[0] ? (
                   <img src={item.media[0]} alt="" className="absolute inset-0 h-full w-full object-cover" />
                 ) : (
                   <div
-                    className="absolute inset-0 grid place-items-center px-3 text-center text-[12.5px]"
-                    style={{ color: "var(--text3)" }}
+                    className="absolute inset-0 grid place-items-center px-3 text-center text-caption text-faint"
                   >
                     No image yet
                   </div>
                 )}
               </div>
               <div className="mt-3.5 flex items-center gap-2.5">
-                <h3 className="font-display min-w-0 flex-1 truncate text-[16px] font-semibold">
+                <h3 className="font-display min-w-0 flex-1 truncate text-section font-semibold">
                   {item.title?.en || "(untitled)"}
                 </h3>
-                <Pill text={item.published ? "published" : "draft"} />
+                <Pill tone={toneForStatus(item.published ? "published" : "draft")}>{item.published ? "published" : "draft"}</Pill>
               </div>
-              <div className="font-mono mt-1.5 truncate text-[11.5px]" style={{ color: "var(--text3)" }}>
+              <div className="font-mono mt-1.5 truncate text-caption text-faint">
                 /{item.slug}
               </div>
               <p
-                className="mt-2 line-clamp-3 min-h-[60px] text-[13.5px] leading-[1.55]"
-                style={{ color: "var(--text2)" }}
+                className="mt-2 line-clamp-3 min-h-[60px] text-ui leading-[1.55] text-muted"
               >
                 {item.summary?.en || item.body?.en || "No summary yet."}
               </p>
@@ -351,7 +354,11 @@ export function ContentCrudScreen({
                 <Button className="flex-1" onClick={() => openForm(toForm(item))}>
                   Edit
                 </Button>
-                <Toggle on={item.published} onClick={() => void togglePublished(item)} />
+                <Toggle
+                checked={item.published}
+                onChange={() => void togglePublished(item)}
+                label={`${item.published ? "Unpublish" : "Publish"} ${item.title?.en || "item"}`}
+              />
                 <RowActions onEdit={() => openForm(toForm(item))} onDelete={() => setToDelete(item)} />
               </div>
             </Card>
@@ -371,19 +378,22 @@ export function ContentCrudScreen({
               }}
             >
               <div className="flex flex-wrap items-center gap-3">
-                <div className="font-mono w-[22px] shrink-0 text-[11px]" style={{ color: "var(--text3)" }}>
+                <div className="font-mono w-[22px] shrink-0 text-label text-faint">
                   {String(i + 1).padStart(2, "0")}
                 </div>
-                <div className="min-w-0 flex-1 text-[15px] font-semibold">
+                <div className="min-w-0 flex-1 text-body font-semibold">
                   {item.title?.en || "(untitled)"}
                 </div>
-                <Toggle on={item.published} onClick={() => void togglePublished(item)} />
-                <Pill text={item.published ? "published" : "draft"} />
+                <Toggle
+                checked={item.published}
+                onChange={() => void togglePublished(item)}
+                label={`${item.published ? "Unpublish" : "Publish"} ${item.title?.en || "item"}`}
+              />
+                <Pill tone={toneForStatus(item.published ? "published" : "draft")}>{item.published ? "published" : "draft"}</Pill>
                 <RowActions onEdit={() => openForm(toForm(item))} onDelete={() => setToDelete(item)} />
               </div>
               <p
-                className="mt-2.5 text-[13.5px] leading-[1.6] sm:pl-[34px]"
-                style={{ color: "var(--text2)" }}
+                className="mt-2.5 text-ui leading-[1.6] sm:pl-[34px] text-muted"
               >
                 {item.summary?.en || item.body?.en || "No answer yet."}
               </p>
@@ -442,12 +452,11 @@ export function ContentCrudScreen({
               says whether that language has a title yet, so an untranslated
               item is visible without opening every tab.
             */}
-            <div className="mb-1.5 text-[12.5px] font-semibold" style={{ color: "var(--text2)" }}>
+            <div className="mb-1.5 text-caption font-semibold text-muted">
               Content
             </div>
             <div
-              className="mb-3 flex overflow-hidden rounded-[9px] border"
-              style={{ borderColor: "var(--border)" }}
+              className="mb-3 flex overflow-hidden rounded-control border border-line"
               role="tablist"
               aria-label="Content language"
             >
@@ -458,7 +467,7 @@ export function ContentCrudScreen({
                   role="tab"
                   aria-selected={activeLang === l.code}
                   onClick={() => setActiveLang(l.code)}
-                  className="flex flex-1 items-center justify-center gap-1.5 px-2 py-2 text-[12.5px] font-semibold"
+                  className="flex flex-1 items-center justify-center gap-1.5 px-2 py-2 text-caption font-semibold"
                   style={{
                     background: activeLang === l.code ? "rgba(255,106,0,.12)" : "transparent",
                     color: activeLang === l.code ? "var(--text)" : "var(--text2)",
@@ -558,8 +567,7 @@ export function ContentCrudScreen({
             {collection === "projects" ? (
               <>
                 <div
-                  className="mb-2 mt-1 border-t pt-4 text-[12.5px] font-semibold"
-                  style={{ borderColor: "var(--border)", color: "var(--text2)" }}
+                  className="mb-2 mt-1 border-t pt-4 text-caption font-semibold border-line text-muted"
                 >
                   Project details
                 </div>
@@ -609,11 +617,10 @@ export function ContentCrudScreen({
                   </Field>
                 </div>
                 <div
-                  className="mb-4 rounded-[11px] border px-[14px] py-3 text-[12.5px]"
-                  style={{ borderColor: "var(--border)", background: "var(--panel2)", color: "var(--text3)" }}
+                  className="mb-4 rounded-control border px-[14px] py-3 text-caption border-line bg-raised text-faint"
                 >
                   Case study page:{" "}
-                  <span className="font-mono" style={{ color: "var(--text2)" }}>
+                  <span className="font-mono text-muted">
                     {`${SITE_URL}/projects/${form.slug.trim() || "your-slug"}`}
                   </span>
                   <br />
@@ -623,8 +630,12 @@ export function ContentCrudScreen({
               </>
             ) : null}
 
-            <label className="flex items-center gap-2.5 text-[13.5px] font-medium">
-              <Toggle on={form.published} onClick={() => setForm({ ...form, published: !form.published })} />
+            <label className="flex items-center gap-2.5 text-ui font-medium">
+              <Toggle
+                checked={form.published}
+                onChange={() => setForm({ ...form, published: !form.published })}
+                label="Published"
+              />
               Published
             </label>
           </form>

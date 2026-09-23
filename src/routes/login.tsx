@@ -44,7 +44,7 @@ function LoginPage() {
       />
       <form
         onSubmit={onSubmit}
-        className="relative w-full max-w-[420px] rounded-[22px] border p-6 sm:p-9"
+        className="relative w-full max-w-[420px] rounded-card border p-6 sm:p-9"
         style={{
           borderColor: "var(--border)",
           background: "var(--panel)",
@@ -53,8 +53,7 @@ function LoginPage() {
       >
         <div className="flex items-center gap-2.5">
           <div
-            className="grid h-[38px] w-[38px] place-items-center rounded-[11px]"
-            style={{ background: "linear-gradient(135deg,#FF6A00,#FF0080)" }}
+            className="grid h-[38px] w-[38px] place-items-center rounded-control bg-brand"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
               <path d="M8 9l-3 3 3 3" />
@@ -62,20 +61,20 @@ function LoginPage() {
             </svg>
           </div>
           <div>
-            <div className="font-display text-[16px] font-bold tracking-tight">KF Tech Solutions</div>
-            <div className="font-mono text-[10.5px] tracking-wider" style={{ color: "var(--text3)" }}>
+            <div className="font-display text-section font-bold tracking-tight">KF Tech Solutions</div>
+            <div className="font-mono text-label tracking-wider text-faint">
               CONTROL PANEL
             </div>
           </div>
         </div>
 
-        <h1 className="font-display mt-7 text-[27px] font-bold tracking-tight">Sign in</h1>
-        <p className="mt-2 text-[14.5px]" style={{ color: "var(--text2)" }}>
+        <h1 className="font-display mt-7 text-display font-bold tracking-tight">Sign in</h1>
+        <p className="mt-2 text-body text-muted">
           Manage content, analytics and enquiries for your site.
         </p>
 
         <div className="mt-6">
-          <label className="mb-2 block text-[12.5px] font-semibold" style={{ color: "var(--text2)" }}>
+          <label className="mb-2 block text-caption font-semibold text-muted">
             Email
           </label>
           <Input
@@ -89,7 +88,7 @@ function LoginPage() {
           />
         </div>
         <div className="mt-[18px]">
-          <label className="mb-2 block text-[12.5px] font-semibold" style={{ color: "var(--text2)" }}>
+          <label className="mb-2 block text-caption font-semibold text-muted">
             Password
           </label>
           <Input
@@ -104,14 +103,14 @@ function LoginPage() {
 
         {error ? (
           <div
-            className="mt-4 rounded-[10px] border px-3.5 py-2.5 text-[13.5px]"
+            className="mt-4 rounded-control border px-3.5 py-2.5 text-ui"
             style={{ background: "rgba(255,0,128,.12)", borderColor: "rgba(255,0,128,.3)", color: "#FF6A9E" }}
           >
             {error}
           </div>
         ) : null}
 
-        <GradientButton type="submit" disabled={submitting} className="mt-5 w-full py-3.5 text-[15.5px]">
+        <GradientButton type="submit" disabled={submitting} className="mt-5 w-full py-3.5 text-body">
           {submitting ? "Signing in…" : "Sign in"}
         </GradientButton>
       </form>

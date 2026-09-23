@@ -12,7 +12,7 @@ export const Route = createRootRoute({
 
 function FullScreenSpinner() {
   return (
-    <div className="grid min-h-screen place-items-center" style={{ background: "var(--bg)" }}>
+    <div className="grid min-h-screen place-items-center bg-bg">
       <Spinner className="h-8 w-8" />
     </div>
   );

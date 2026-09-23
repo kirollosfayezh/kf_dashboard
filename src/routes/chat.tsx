@@ -11,7 +11,8 @@ import {
   type TypingPayload,
 } from "@/services/chat";
 import type { ChatMessage, ChatThread } from "@/services/domain-types";
-import { Avatar, EmptyState, ErrorBanner, Pill, SectionHead, Spinner } from "@/components/ui";
+import { Avatar, EmptyState, ErrorBanner, Pill,
+  toneForStatus, SectionHead, Spinner } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/chat")({
@@ -210,8 +211,7 @@ function ChatPage() {
         subtitle="Answer website visitors in real time. Replies appear on the site instantly, pushed over Socket.io."
         action={
           <span
-            className="font-mono inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10.5px] tracking-wider"
-            style={{ borderColor: "var(--border)", color: "var(--text3)" }}
+            className="font-mono inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-label tracking-wider border-line text-faint"
           >
             <span
               className="h-1.5 w-1.5 rounded-full"
@@ -238,8 +238,7 @@ function ChatPage() {
               href={import.meta.env.VITE_SITE_URL ?? "#"}
               target="_blank"
               rel="noreferrer"
-              className="rounded-[10px] px-5 py-[11px] text-[13.5px] font-semibold"
-              style={{ background: "linear-gradient(135deg,#FF6A00,#FF0080)", color: "#fff" }}
+              className="rounded-control px-5 py-[11px] text-ui font-semibold bg-brand text-white"
             >
               Open the site
             </a>
@@ -249,15 +248,13 @@ function ChatPage() {
         <div className="grid gap-4 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
           {/* Thread list — hidden on mobile once a conversation is open. */}
           <div
-            className={cn(
-              "flex max-h-[70vh] flex-col overflow-hidden rounded-2xl border md:flex md:max-h-[620px]",
+            className={cn("border-line bg-panel", 
+              "flex max-h-[70vh] flex-col overflow-hidden rounded-card border md:flex md:max-h-[620px]",
               activeId && "hidden",
             )}
-            style={{ borderColor: "var(--border)", background: "var(--panel)" }}
           >
             <div
-              className="font-mono border-b px-4 py-3 text-[10.5px] tracking-wider"
-              style={{ borderColor: "var(--border)", background: "var(--panel2)", color: "var(--text3)" }}
+              className="font-mono border-b px-4 py-3 text-label tracking-wider border-line bg-raised text-faint"
             >
               CONVERSATIONS · {threads.length}
             </div>
@@ -276,17 +273,16 @@ function ChatPage() {
                       background: on ? "var(--hover)" : "transparent",
                     }}
                   >
-                    <Avatar name={threadName(t)} size={34} />
+                    <Avatar name={threadName(t)} size="md" />
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-[13.5px] font-semibold">{threadName(t)}</div>
-                      <div className="font-mono mt-0.5 truncate text-[10.5px]" style={{ color: "var(--text3)" }}>
+                      <div className="truncate text-ui font-semibold">{threadName(t)}</div>
+                      <div className="font-mono mt-0.5 truncate text-label text-faint">
                         {typing[t.visitorId] ? "typing…" : t.visitorMeta?.contact || t.visitorId}
                       </div>
                     </div>
                     {count > 0 ? (
                       <span
-                        className="font-mono grid h-[19px] min-w-[19px] shrink-0 place-items-center rounded-full px-1.5 text-[10px] font-bold text-white"
-                        style={{ background: "linear-gradient(135deg,#FF6A00,#FF0080)" }}
+                        className="font-mono grid h-[19px] min-w-[19px] shrink-0 place-items-center rounded-full px-1.5 text-label font-bold text-white bg-brand"
                       >
                         {count}
                       </span>
@@ -299,26 +295,23 @@ function ChatPage() {
 
           {active ? (
             <div
-              className="flex max-h-[75vh] min-h-[420px] flex-col overflow-hidden rounded-2xl border md:max-h-[620px]"
-              style={{ borderColor: "var(--border)", background: "var(--panel)" }}
+              className="flex max-h-[75vh] min-h-[420px] flex-col overflow-hidden rounded-card border md:max-h-[620px] border-line bg-panel"
             >
               <div
-                className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b px-4 py-3.5 md:px-[18px]"
-                style={{ borderColor: "var(--border)" }}
+                className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b px-4 py-3.5 md:px-[18px] border-line"
               >
                 <button
                   type="button"
                   aria-label="Back to conversations"
                   onClick={() => setActiveId(null)}
-                  className="grid h-9 w-9 shrink-0 place-items-center rounded-[9px] border md:hidden"
-                  style={{ borderColor: "var(--border)", color: "var(--text2)" }}
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-control border md:hidden border-line text-muted"
                 >
                   <ArrowLeft size={16} />
                 </button>
-                <Avatar name={threadName(active)} size={36} />
+                <Avatar name={threadName(active)} size="md" />
                 <div className="min-w-[110px] flex-1">
-                  <div className="truncate text-[14.5px] font-semibold">{threadName(active)}</div>
-                  <div className="font-mono truncate text-[12px]" style={{ color: "var(--text2)" }}>
+                  <div className="truncate text-body font-semibold">{threadName(active)}</div>
+                  <div className="font-mono truncate text-caption text-muted">
                     {typing[active.visitorId] ? "typing…" : contact || active.visitorId}
                   </div>
                 </div>
@@ -327,13 +320,12 @@ function ChatPage() {
                     href={`https://wa.me/${contact.replace(/[^\d]/g, "")}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-[9px] border px-3.5 py-2 text-[12.5px] font-semibold"
-                    style={{ borderColor: "var(--border)", color: "var(--text2)" }}
+                    className="rounded-control border px-3.5 py-2 text-caption font-semibold border-line text-muted"
                   >
                     WhatsApp
                   </a>
                 ) : null}
-                <Pill text="new" />
+                <Pill tone={toneForStatus("new")}>new</Pill>
               </div>
 
               <div ref={scrollRef} className="kf-scrollbar flex flex-1 flex-col gap-2.5 overflow-y-auto p-4 md:p-[18px]">
@@ -343,7 +335,7 @@ function ChatPage() {
                   </div>
                 ) : null}
                 {!loadingMessages && messages.length === 0 ? (
-                  <div className="text-[13px]" style={{ color: "var(--text3)" }}>
+                  <div className="text-ui text-faint">
                     No messages yet.
                   </div>
                 ) : null}
@@ -354,7 +346,7 @@ function ChatPage() {
                     style={{ alignSelf: m.from === "agent" ? "flex-end" : "flex-start" }}
                   >
                     <div
-                      className="whitespace-pre-wrap break-words rounded-[15px] px-3.5 py-2.5 text-[14px] leading-relaxed"
+                      className="whitespace-pre-wrap break-words rounded-card px-3.5 py-2.5 text-body leading-relaxed"
                       style={{
                         background: m.from === "agent" ? "linear-gradient(135deg,#FF6A00,#FF0080)" : "var(--panel2)",
                         color: m.from === "agent" ? "#fff" : "var(--text)",
@@ -365,7 +357,7 @@ function ChatPage() {
                       {m.text}
                     </div>
                     <div
-                      className="font-mono mt-1 text-[10.5px]"
+                      className="font-mono mt-1 text-label"
                       style={{ color: "var(--text3)", textAlign: m.from === "agent" ? "right" : "left" }}
                     >
                       {m.ts ? new Date(m.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
@@ -381,8 +373,7 @@ function ChatPage() {
                     type="button"
                     disabled={sending}
                     onClick={() => void sendReply(q)}
-                    className="shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-[12px] disabled:opacity-50 md:whitespace-normal"
-                    style={{ borderColor: "var(--border)", color: "var(--text2)" }}
+                    className="shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-caption disabled:opacity-50 md:whitespace-normal border-line text-muted"
                   >
                     {q}
                   </button>
@@ -394,21 +385,18 @@ function ChatPage() {
                   e.preventDefault();
                   void sendReply(draft);
                 }}
-                className="flex gap-2 border-t px-3 py-3 sm:gap-2.5 sm:px-4"
-                style={{ borderColor: "var(--border)" }}
+                className="flex gap-2 border-t px-3 py-3 sm:gap-2.5 sm:px-4 border-line"
               >
                 <input
                   value={draft}
                   onChange={(e) => signalTyping(e.target.value)}
                   placeholder="Reply as admin…"
-                  className="min-w-0 flex-1 rounded-[11px] border px-3.5 py-3 text-[14px]"
-                  style={{ borderColor: "var(--border)", background: "var(--field)" }}
+                  className="min-w-0 flex-1 rounded-control border px-3.5 py-3 text-body border-line bg-field"
                 />
                 <button
                   type="submit"
                   disabled={sending || !draft.trim()}
-                  className="shrink-0 rounded-[11px] px-4 py-3 text-[14px] font-semibold text-white disabled:opacity-50 sm:px-5"
-                  style={{ background: "linear-gradient(135deg,#FF6A00,#FF0080)" }}
+                  className="shrink-0 rounded-control px-4 py-3 text-body font-semibold text-white disabled:opacity-50 sm:px-5 bg-brand"
                 >
                   Send
                 </button>
@@ -416,10 +404,9 @@ function ChatPage() {
             </div>
           ) : (
             <div
-              className="hidden place-items-center rounded-2xl border p-10 md:grid"
-              style={{ borderColor: "var(--border)" }}
+              className="hidden place-items-center rounded-card border p-10 md:grid border-line"
             >
-              <span style={{ color: "var(--text3)" }}>Select a conversation</span>
+              <span className="text-faint">Select a conversation</span>
             </div>
           )}
         </div>

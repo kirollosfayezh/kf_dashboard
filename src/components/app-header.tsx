@@ -26,17 +26,16 @@ export function AppHeader({ onOpenNav }: { onOpenNav: () => void }) {
         type="button"
         aria-label="Open navigation"
         onClick={onOpenNav}
-        className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[10px] border lg:hidden"
-        style={{ borderColor: "var(--border)", background: "var(--panel)" }}
+        className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-control border lg:hidden border-line bg-panel"
       >
         <Menu size={18} />
       </button>
 
       <div className="min-w-0 flex-1">
-        <div className="font-mono text-[10.5px] tracking-[.08em]" style={{ color: "var(--text3)" }}>
+        <div className="font-mono text-label tracking-[.08em] text-faint">
           DASHBOARD / {title.toUpperCase()}
         </div>
-        <h1 className="font-display truncate text-[19px] font-semibold tracking-[-.01em]">{title}</h1>
+        <h1 className="font-display truncate text-section font-semibold tracking-[-.01em]">{title}</h1>
       </div>
 
       <div className="flex shrink-0 items-center gap-[9px]">
@@ -45,8 +44,7 @@ export function AppHeader({ onOpenNav }: { onOpenNav: () => void }) {
           onClick={toggle}
           title="Toggle theme"
           aria-label="Toggle theme"
-          className="grid h-[38px] w-[38px] place-items-center rounded-[10px] border transition-colors"
-          style={{ borderColor: "var(--border)", background: "var(--panel)" }}
+          className="grid h-[38px] w-[38px] place-items-center rounded-control border transition-colors border-line bg-panel"
         >
           {theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
         </button>
@@ -54,8 +52,7 @@ export function AppHeader({ onOpenNav }: { onOpenNav: () => void }) {
           href={import.meta.env.VITE_SITE_URL ?? "#"}
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-2 whitespace-nowrap rounded-[10px] px-[17px] py-2.5 text-[13.5px] font-semibold text-white transition-transform hover:-translate-y-px"
-          style={{ background: "linear-gradient(135deg,#FF6A00,#FF0080)", color: "#fff" }}
+          className="flex items-center gap-2 whitespace-nowrap rounded-control px-[17px] py-2.5 text-ui font-semibold text-white transition-transform hover:-translate-y-px bg-brand text-white"
         >
           <ExternalLink size={15} />
           <span className="hidden sm:inline">View live site</span>

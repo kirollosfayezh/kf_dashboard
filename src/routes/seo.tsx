@@ -62,7 +62,7 @@ function Counter({ value, limit }: { value: string; limit: number }) {
   const over = n > limit;
   return (
     <span
-      className="font-mono text-[11.5px]"
+      className="font-mono text-caption"
       style={{ color: over ? "#FF6A9E" : "var(--text3)", fontVariantNumeric: "tabular-nums" }}
       title={over ? `Google usually truncates past about ${limit} characters` : undefined}
     >
@@ -87,22 +87,21 @@ function SerpPreview({
   const url = `${origin.replace(/^https?:\/\//, "")}${path === "/" ? "" : path}`;
   return (
     <div
-      className="rounded-[12px] border p-[14px]"
-      style={{ borderColor: "var(--border)", background: "var(--panel2)" }}
+      className="rounded-control border p-[14px] border-line bg-raised"
     >
-      <div className="mb-2 flex items-center gap-1.5 text-[11px]" style={{ color: "var(--text3)" }}>
+      <div className="mb-2 flex items-center gap-1.5 text-label text-faint">
         <Search size={12} />
         <span className="font-mono tracking-[.06em]">SEARCH PREVIEW</span>
       </div>
-      <div className="font-mono text-[12.5px]" style={{ color: "var(--text2)" }}>
+      <div className="font-mono text-caption text-muted">
         {url}
       </div>
-      <div className="mt-0.5 text-[16px] leading-[1.3]" style={{ color: "#8AB4F8" }}>
-        {shown(title, TITLE_LIMIT) || <span style={{ color: "var(--text3)" }}>Using the site default</span>}
+      <div className="mt-0.5 text-section leading-[1.3]" style={{ color: "#8AB4F8" }}>
+        {shown(title, TITLE_LIMIT) || <span className="text-faint">Using the site default</span>}
       </div>
-      <div className="mt-1 text-[13px] leading-[1.45]" style={{ color: "var(--text2)" }}>
+      <div className="mt-1 text-ui leading-[1.45] text-muted">
         {shown(description, DESC_LIMIT) || (
-          <span style={{ color: "var(--text3)" }}>Using the site default</span>
+          <span className="text-faint">Using the site default</span>
         )}
       </div>
     </div>
@@ -194,7 +193,7 @@ function SeoPage() {
 
       {error ? <ErrorBanner message={error} /> : null}
 
-      <Card className="mb-4" style={{ background: "var(--panel2)" }}>
+      <Card className="mb-4 bg-raised">
         <PanelHead
           title="How these apply"
           subtitle="Saving writes the override immediately, but the public site bakes these into its HTML at build time — redeploy the site for a change to reach search engines and social scrapers."
@@ -210,15 +209,15 @@ function SeoPage() {
             <Card key={p.key}>
               <div className="mb-[18px] flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h2 className="font-display text-[17px] font-semibold tracking-[-.01em]">
+                  <h2 className="font-display text-section font-semibold tracking-[-.01em]">
                     {p.label}
                   </h2>
-                  <p className="font-mono mt-[5px] text-[12.5px]" style={{ color: "var(--text3)" }}>
+                  <p className="font-mono mt-[5px] text-caption text-faint">
                     {p.path}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[12px]" style={{ color: "var(--text3)" }}>
+                  <span className="text-caption text-faint">
                     {overridden
                       ? savedAtByKey[p.key]
                         ? `edited ${new Date(savedAtByKey[p.key] as string).toLocaleDateString()}`
@@ -230,8 +229,7 @@ function SeoPage() {
                       type="button"
                       onClick={() => reset(p.key)}
                       title="Clear every field so this page falls back to the site's built-in values"
-                      className="flex items-center gap-1.5 rounded-[9px] border px-2.5 py-1.5 text-[12px]"
-                      style={{ borderColor: "var(--border)", color: "var(--text2)" }}
+                      className="flex items-center gap-1.5 rounded-control border px-2.5 py-1.5 text-caption border-line text-muted"
                     >
                       <RotateCcw size={13} />
                       Reset
@@ -294,12 +292,11 @@ function SeoPage() {
                   </Field>
 
                   <div
-                    className="mb-4 flex items-center justify-between rounded-[11px] border px-[14px] py-3"
-                    style={{ borderColor: "var(--border)" }}
+                    className="mb-4 flex items-center justify-between rounded-control border px-[14px] py-3 border-line"
                   >
                     <div>
-                      <div className="text-[13px] font-semibold">Hide from search engines</div>
-                      <div className="mt-0.5 text-[12px]" style={{ color: "var(--text3)" }}>
+                      <div className="text-ui font-semibold">Hide from search engines</div>
+                      <div className="mt-0.5 text-caption text-faint">
                         {d.noindex === null
                           ? "Following the site default for this page"
                           : d.noindex
@@ -308,8 +305,9 @@ function SeoPage() {
                       </div>
                     </div>
                     <Toggle
-                      on={d.noindex === true}
-                      onClick={() => field(p.key, "noindex", d.noindex === true ? false : true)}
+                      checked={d.noindex === true}
+                      onChange={() => field(p.key, "noindex", d.noindex === true ? false : true)}
+                      label={`Hide ${p.label} from search engines`}
                     />
                   </div>
                 </div>
@@ -323,13 +321,13 @@ function SeoPage() {
                   />
                   {d.image ? (
                     <div className="mt-4">
-                      <div className="mb-1.5 text-[12.5px] font-semibold" style={{ color: "var(--text2)" }}>
+                      <div className="mb-1.5 text-caption font-semibold text-muted">
                         Share image
                       </div>
                       <img
                         src={d.image}
                         alt=""
-                        className="w-full rounded-[11px] border"
+                        className="w-full rounded-control border"
                         style={{ borderColor: "var(--border)", aspectRatio: "1200 / 630", objectFit: "cover" }}
                         onError={(e) => {
                           (e.currentTarget as HTMLImageElement).style.display = "none";
@@ -345,7 +343,7 @@ function SeoPage() {
                   {savingKey === p.key ? "Saving…" : "Save"}
                 </GradientButton>
                 {savedKey === p.key ? (
-                  <span className="flex items-center gap-1.5 text-[13px]" style={{ color: "#4ADE80" }}>
+                  <span className="flex items-center gap-1.5 text-ui text-success">
                     <Check size={15} />
                     Saved
                   </span>

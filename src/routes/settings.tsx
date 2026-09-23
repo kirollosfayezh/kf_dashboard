@@ -76,25 +76,25 @@ function SettingsPage() {
     return (
       <div
         key={code}
-        className="flex items-center gap-3 rounded-[10px] border px-3.5 py-3"
+        className="flex items-center gap-3 rounded-control border px-3.5 py-3"
         style={{ borderColor: "var(--border)", background: "var(--panel2)", opacity: isReal ? 1 : 0.55 }}
       >
-        <span className="font-mono w-6 text-[11.5px]" style={{ color: "#FF9A4D" }}>
+        <span className="font-mono w-6 text-caption text-warning">
           {code.toUpperCase()}
         </span>
-        <span className="flex-1 text-[14px] font-semibold">{existing?.label ?? code.toUpperCase()}</span>
+        <span className="flex-1 text-body font-semibold">{existing?.label ?? code.toUpperCase()}</span>
         {!isReal ? (
           <span
-            className="font-mono rounded-full px-2 py-0.5 text-[10px]"
-            style={{ background: "var(--hover)", color: "var(--text2)" }}
+            className="font-mono rounded-full px-2 py-0.5 text-label bg-hover text-muted"
           >
             COMING SOON
           </span>
         ) : null}
         <Toggle
-          on={enabled}
+          checked={enabled}
           disabled={!isReal}
-          onClick={() => {
+          label={`Show ${existing?.label ?? code.toUpperCase()} in the site's language switcher`}
+          onChange={() => {
             const languages = KNOWN_LANGUAGES.map((c) => {
               const found = settings.languages.find((l) => l.code === c);
               if (c === code) {
@@ -137,16 +137,14 @@ function SettingsPage() {
               onChange={(e) => setSettings({ ...settings, tagline: { ...settings.tagline, ar: e.target.value } })}
             />
           </Field>
-          <div className="mb-2 text-[12.5px] font-semibold" style={{ color: "var(--text2)" }}>
+          <div className="mb-2 text-caption font-semibold text-muted">
             Logo
           </div>
           <div
-            className="mb-4 flex items-center gap-3.5 rounded-[11px] border p-3.5"
-            style={{ borderColor: "var(--border)", background: "var(--panel2)" }}
+            className="mb-4 flex items-center gap-3.5 rounded-control border p-3.5 border-line bg-raised"
           >
             <div
-              className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-[12px]"
-              style={{ background: "linear-gradient(135deg,#FF6A00,#FF0080)" }}
+              className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-control bg-brand"
             >
               {settings.logoUrl ? (
                 <img src={settings.logoUrl} alt="" className="h-full w-full object-contain" />
@@ -179,7 +177,7 @@ function SettingsPage() {
               <div
                 key={c}
                 title={c}
-                className="h-[34px] w-[34px] rounded-[9px] border"
+                className="h-[34px] w-[34px] rounded-control border"
                 style={{ background: c, borderColor: "var(--bstrong)" }}
               />
             ))}
@@ -192,8 +190,7 @@ function SettingsPage() {
           <div className="mt-4">
             <Field label="Default language">
               <select
-                className="w-full rounded-[10px] border px-3.5 py-2.5 text-[14px]"
-                style={{ borderColor: "var(--border)", background: "var(--panel)", color: "var(--text)" }}
+                className="w-full rounded-control border px-3.5 py-2.5 text-body border-line bg-panel text-ink"
                 value={settings.defaultLanguage}
                 onChange={(e) => setSettings({ ...settings, defaultLanguage: e.target.value })}
               >
@@ -267,7 +264,7 @@ function SettingsPage() {
             {saving ? "Saving…" : "Save changes"}
           </GradientButton>
           {savedAt ? (
-            <span className="text-[12.5px]" style={{ color: "var(--text3)" }}>
+            <span className="text-caption text-faint">
               Saved.
             </span>
           ) : null}

@@ -106,16 +106,14 @@ export function AppSidebar({ open = false, onClose }: { open?: boolean; onClose?
       ) : null}
 
       <aside
-        className={cn(
+        className={cn("border-line bg-panel", 
           "fixed left-0 top-0 z-50 flex h-screen w-[250px] max-w-[85vw] flex-col border-r transition-transform duration-200 lg:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full",
         )}
-        style={{ borderColor: "var(--border)", background: "var(--panel)" }}
       >
-      <div className="flex items-center gap-2.5 border-b px-[18px] py-5" style={{ borderColor: "var(--border)" }}>
+      <div className="flex items-center gap-2.5 border-b px-[18px] py-5 border-line">
         <div
-          className="grid h-[33px] w-[33px] shrink-0 place-items-center rounded-[10px]"
-          style={{ background: "linear-gradient(135deg,#FF6A00,#FF0080)" }}
+          className="grid h-[33px] w-[33px] shrink-0 place-items-center rounded-control bg-brand"
         >
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.3} strokeLinecap="round" strokeLinejoin="round">
             <path d="M8 9l-3 3 3 3" />
@@ -123,8 +121,8 @@ export function AppSidebar({ open = false, onClose }: { open?: boolean; onClose?
           </svg>
         </div>
         <div className="min-w-0 flex-1">
-          <div className="font-display whitespace-nowrap text-[14px] font-bold">KF Tech</div>
-          <div className="font-mono text-[9.5px] tracking-wider" style={{ color: "var(--text3)" }}>
+          <div className="font-display whitespace-nowrap text-body font-bold">KF Tech</div>
+          <div className="font-mono text-label tracking-wider text-faint">
             CONTROL PANEL
           </div>
         </div>
@@ -132,8 +130,7 @@ export function AppSidebar({ open = false, onClose }: { open?: boolean; onClose?
           type="button"
           aria-label="Close navigation"
           onClick={onClose}
-          className="shrink-0 lg:hidden"
-          style={{ color: "var(--text3)" }}
+          className="shrink-0 lg:hidden text-faint"
         >
           <X size={18} />
         </button>
@@ -143,8 +140,7 @@ export function AppSidebar({ open = false, onClose }: { open?: boolean; onClose?
         {NAV.map((section) => (
           <div key={section.group}>
             <div
-              className="font-mono px-3 pb-1.5 pt-4 text-[9.5px] tracking-[.12em]"
-              style={{ color: "var(--text3)" }}
+              className="font-mono px-3 pb-1.5 pt-4 text-label tracking-[.12em] text-faint"
             >
               {section.group}
             </div>
@@ -156,7 +152,7 @@ export function AppSidebar({ open = false, onClose }: { open?: boolean; onClose?
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    "mb-0.5 flex items-center gap-2.5 rounded-[10px] border px-3 py-2.5 text-[13.5px] font-medium transition-colors",
+                    "mb-0.5 flex items-center gap-2.5 rounded-control border px-3 py-2.5 text-ui font-medium transition-colors",
                     active && "font-semibold",
                   )}
                   style={{
@@ -171,8 +167,7 @@ export function AppSidebar({ open = false, onClose }: { open?: boolean; onClose?
                   <span className="flex-1 text-left">{item.label}</span>
                   {item.to === "/inbox" && newLeads > 0 ? (
                     <span
-                      className="font-mono rounded-full px-[7px] py-[2px] text-[10px] text-white"
-                      style={{ background: "linear-gradient(135deg,#FF6A00,#FF0080)" }}
+                      className="font-mono rounded-full px-[7px] py-[2px] text-label text-white bg-brand"
                     >
                       {newLeads}
                     </span>
@@ -184,40 +179,36 @@ export function AppSidebar({ open = false, onClose }: { open?: boolean; onClose?
         ))}
       </nav>
 
-      <div className="flex flex-col gap-2 border-t p-3" style={{ borderColor: "var(--border)" }}>
+      <div className="flex flex-col gap-2 border-t p-3 border-line">
         <a
           href={import.meta.env.VITE_SITE_URL ?? "#"}
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-[13.5px]"
-          style={{ color: "var(--text2)" }}
+          className="flex items-center gap-2.5 rounded-control px-3 py-2.5 text-ui text-muted"
         >
           <ExternalLink size={16} />
           View live site
         </a>
         <div
-          className="flex items-center gap-2.5 rounded-[10px] border p-2.5"
-          style={{ borderColor: "var(--border)", background: "var(--panel2)" }}
+          className="flex items-center gap-2.5 rounded-control border p-2.5 border-line bg-raised"
         >
           <div
-            className="grid h-[29px] w-[29px] shrink-0 place-items-center rounded-full text-[11.5px] font-bold text-white"
-            style={{ background: "linear-gradient(135deg,#FF6A00,#FF0080)" }}
+            className="grid h-[29px] w-[29px] shrink-0 place-items-center rounded-full text-caption font-bold text-white bg-brand"
           >
             KF
           </div>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-[12.5px] font-semibold">
+            <div className="truncate text-caption font-semibold">
               {user?.name || user?.email || "Admin"}
             </div>
-            <div className="text-[10.5px]" style={{ color: "var(--text3)" }}>
+            <div className="text-label text-faint">
               Administrator
             </div>
           </div>
           <button
             title="Sign out"
             aria-label="Sign out"
-            onClick={() => logout()}
-            style={{ color: "var(--text3)" }}
+            onClick={() => logout()} className="text-faint"
           >
             <LogOut size={15} />
           </button>

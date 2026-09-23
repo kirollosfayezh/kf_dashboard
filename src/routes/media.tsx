@@ -128,26 +128,23 @@ function MediaPage() {
           {items.map((item) => (
             <div
               key={item.id}
-              className="overflow-hidden rounded-2xl border"
-              style={{ borderColor: "var(--border)", background: "var(--panel)" }}
+              className="overflow-hidden rounded-card border border-line bg-panel"
             >
               <div
-                className="relative aspect-square"
-                style={{ background: "var(--panel2)" }}
+                className="relative aspect-square bg-raised"
               >
                 {item.contentType?.startsWith("image/") ? (
                   <img src={item.url} alt="" className="absolute inset-0 h-full w-full object-cover" />
                 ) : (
                   <div
-                    className="absolute inset-0 grid place-items-center px-3 text-center text-[12px]"
-                    style={{ color: "var(--text3)" }}
+                    className="absolute inset-0 grid place-items-center px-3 text-center text-caption text-faint"
                   >
                     {item.contentType}
                   </div>
                 )}
               </div>
               <div className="flex items-center justify-between gap-2 p-2.5">
-                <div className="truncate font-mono text-[11px]" style={{ color: "var(--text3)" }}>
+                <div className="truncate font-mono text-label text-faint">
                   {(item.size / 1024).toFixed(0)} KB
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
@@ -156,7 +153,7 @@ function MediaPage() {
                       half of that instruction. */}
                   <button
                     onClick={() => void copyUrl(item)}
-                    className="text-[12px] font-semibold"
+                    className="text-caption font-semibold"
                     style={{ color: copiedId === item.id ? "#4ADE80" : "var(--text2)" }}
                     title={item.url}
                   >
@@ -164,8 +161,7 @@ function MediaPage() {
                   </button>
                   <button
                     onClick={() => setToDelete(item)}
-                    className="text-[12px] font-semibold"
-                    style={{ color: "#FF6A9E" }}
+                    className="text-caption font-semibold text-danger"
                   >
                     Delete
                   </button>

@@ -124,8 +124,7 @@ function AnalyticsPage() {
           /* One filter row above everything it scopes — every card re-reads the same slice. */
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             <div
-              className="flex overflow-hidden rounded-[10px] border"
-              style={{ borderColor: "var(--border)", background: "var(--panel)" }}
+              className="flex overflow-hidden rounded-control border border-line bg-panel"
             >
             {RANGES.map((r) => (
               <button
@@ -133,7 +132,7 @@ function AnalyticsPage() {
                 type="button"
                 onClick={() => setDays(r.days)}
                 aria-pressed={days === r.days}
-                className="px-[15px] py-2.5 text-[13px] font-semibold transition-colors"
+                className="px-[15px] py-2.5 text-ui font-semibold transition-colors"
                 style={{
                   background: days === r.days ? "rgba(255,106,0,.12)" : "transparent",
                   color: days === r.days ? "var(--text)" : "var(--text2)",
@@ -148,8 +147,7 @@ function AnalyticsPage() {
               onClick={() => data && downloadCsv(data)}
               disabled={!data}
               title="Download everything on this screen as CSV"
-              className="flex shrink-0 items-center gap-2 rounded-[10px] border px-[15px] py-2.5 text-[13px] font-semibold transition-colors disabled:opacity-40"
-              style={{ borderColor: "var(--border)", background: "var(--panel)", color: "var(--text2)" }}
+              className="flex shrink-0 items-center gap-2 rounded-control border px-[15px] py-2.5 text-ui font-semibold transition-colors disabled:opacity-40 border-line bg-panel text-muted"
             >
               <Download size={15} />
               Export
@@ -171,18 +169,16 @@ function AnalyticsPage() {
         <div style={{ opacity: loading ? 0.55 : 1, transition: "opacity .2s" }}>
           {!hasEvents ? (
             <Card
-              className="mb-4 flex items-start gap-3.5"
-              style={{ background: "var(--panel2)" }}
+              className="mb-4 flex items-start gap-3.5 bg-raised"
             >
               <div
-                className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[11px] border"
-                style={{ background: "var(--panel)", borderColor: "var(--border)", color: "var(--text3)" }}
+                className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-control border bg-panel border-line text-faint"
               >
                 <BarChart3 size={18} />
               </div>
               <div>
-                <div className="font-display text-[15px] font-semibold">No events yet</div>
-                <p className="mt-1 max-w-[560px] text-[13.5px] leading-[1.55]" style={{ color: "var(--text2)" }}>
+                <div className="font-display text-body font-semibold">No events yet</div>
+                <p className="mt-1 max-w-[560px] text-ui leading-[1.55] text-muted">
                   Tracking is live but nothing has been recorded in the last {data.range.days} days.
                   Numbers appear here as soon as visitors load a page or tap a tracked control on
                   the site — nothing to configure.
@@ -210,7 +206,7 @@ function AnalyticsPage() {
                   label={label}
                   value={compact(data.totals[key])}
                   caption={d.label}
-                  captionTone={d.direction === "flat" ? "muted" : d.direction}
+                  tone={d.direction === "up" ? "success" : d.direction === "down" ? "danger" : "neutral"}
                   delay={i * 0.05}
                 />
               );

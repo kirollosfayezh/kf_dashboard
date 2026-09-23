@@ -193,7 +193,7 @@ function CopyButton({ value }: { value: string }) {
           window.setTimeout(() => setDone(false), 1400);
         });
       }}
-      className="grid h-8 w-8 shrink-0 place-items-center rounded-[8px] border"
+      className="grid h-8 w-8 shrink-0 place-items-center rounded-xs border"
       style={{ borderColor: "var(--border)", color: done ? "#4ADE80" : "var(--text3)" }}
     >
       {done ? <Check size={14} /> : <Copy size={13} />}
@@ -219,12 +219,12 @@ function TrackingField({
   return (
     <div className="mb-5">
       <div className="mb-1.5 flex items-center justify-between gap-3">
-        <label htmlFor={id} className="text-[12.5px] font-semibold" style={{ color: "var(--text2)" }}>
+        <label htmlFor={id} className="text-caption font-semibold text-muted">
           {spec.label}
         </label>
         {filled ? (
           <span
-            className="flex items-center gap-1.5 text-[11.5px]"
+            className="flex items-center gap-1.5 text-caption"
             style={{ color: valid ? "#4ADE80" : "#FBBF24" }}
           >
             {valid ? <CircleCheck size={13} /> : <CircleAlert size={13} />}
@@ -251,19 +251,19 @@ function TrackingField({
         <CopyButton value={clean(value)} />
       </div>
 
-      <div className="mt-1.5 text-[12px]" style={{ color: "var(--text3)" }}>
+      <div className="mt-1.5 text-caption text-faint">
         {spec.where}
       </div>
 
       {filled && !valid ? (
-        <div className="mt-1.5 text-[12px]" style={{ color: "#FBBF24" }}>
+        <div className="mt-1.5 text-caption text-warning">
           Expected {spec.shape}. It will still be saved — double-check it against the platform before relying on it.
         </div>
       ) : null}
 
       {conflict ? (
         <div
-          className="mt-2 flex items-start gap-2 rounded-[10px] border px-3 py-2.5 text-[12.5px]"
+          className="mt-2 flex items-start gap-2 rounded-control border px-3 py-2.5 text-caption"
           style={{ borderColor: "rgba(251,191,36,.4)", background: "rgba(251,191,36,.08)", color: "#FBBF24" }}
         >
           <AlertTriangle size={14} className="mt-[2px] shrink-0" />
@@ -396,15 +396,15 @@ function MarketingPage() {
       {error ? <ErrorBanner message={error} /> : null}
 
       {/* What is live right now, before any of the fields. */}
-      <Card className="mb-4" style={{ background: "var(--panel2)" }}>
+      <Card className="mb-4 bg-raised">
         <div className="flex flex-wrap items-center gap-2.5">
-          <span className="text-[13px] font-semibold">
+          <span className="text-ui font-semibold">
             {connected.length ? "Connected:" : "Nothing connected yet"}
           </span>
           {connected.map((name) => (
             <span
               key={name}
-              className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px]"
+              className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-caption"
               style={{ background: "rgba(34,197,94,.14)", color: "#4ADE80" }}
             >
               <CircleCheck size={12} />
@@ -412,7 +412,7 @@ function MarketingPage() {
             </span>
           ))}
           {!connected.length ? (
-            <span className="text-[12.5px]" style={{ color: "var(--text3)" }}>
+            <span className="text-caption text-faint">
               Your site currently loads no third-party tracking and sets no advertising cookie.
             </span>
           ) : null}
@@ -423,7 +423,7 @@ function MarketingPage() {
             {warnings.map((w) => (
               <div
                 key={w}
-                className="flex items-start gap-2 rounded-[10px] border px-3 py-2.5 text-[12.5px]"
+                className="flex items-start gap-2 rounded-control border px-3 py-2.5 text-caption"
                 style={{ borderColor: "rgba(251,191,36,.4)", background: "rgba(251,191,36,.08)", color: "#FBBF24" }}
               >
                 <AlertTriangle size={14} className="mt-[2px] shrink-0" />
@@ -437,8 +437,7 @@ function MarketingPage() {
       {/* Tabs. Horizontally scrollable rather than wrapped, so the row stays one
           line on a phone instead of becoming a six-item block. */}
       <div
-        className="mb-4 flex gap-1 overflow-x-auto rounded-[11px] border p-1"
-        style={{ borderColor: "var(--border)", background: "var(--panel2)" }}
+        className="mb-4 flex gap-1 overflow-x-auto rounded-control border p-1 border-line bg-raised"
         role="tablist"
         aria-label="Marketing platform"
       >
@@ -449,7 +448,7 @@ function MarketingPage() {
             role="tab"
             aria-selected={tab === t.id}
             onClick={() => setTab(t.id)}
-            className="shrink-0 rounded-[8px] px-3.5 py-2 text-[13px] font-semibold"
+            className="shrink-0 rounded-xs px-3.5 py-2 text-ui font-semibold"
             style={{
               background: tab === t.id ? "rgba(255,106,0,.14)" : "transparent",
               color: tab === t.id ? "var(--text)" : "var(--text2)",
@@ -465,10 +464,9 @@ function MarketingPage() {
           <>
             {tab === "google" ? (
               <div
-                className="mb-5 flex items-start gap-2 rounded-[11px] border px-[14px] py-3 text-[12.5px]"
-                style={{ borderColor: "var(--border)", background: "var(--panel2)", color: "var(--text2)" }}
+                className="mb-5 flex items-start gap-2 rounded-control border px-[14px] py-3 text-caption border-line bg-raised text-muted"
               >
-                <Info size={14} className="mt-[2px] shrink-0" style={{ color: "var(--text3)" }} />
+                <Info size={14} className="mt-[2px] shrink-0 text-faint" />
                 <span>
                   Using Tag Manager? Fill in the container ID and leave the rest of this tab — and the other
                   platform tabs — empty. Your site already publishes its events to the data layer, so the
@@ -491,7 +489,7 @@ function MarketingPage() {
 
         {tab === "events" ? (
           <>
-            <p className="mb-4 text-[13px] leading-relaxed" style={{ color: "var(--text2)" }}>
+            <p className="mb-4 text-ui leading-relaxed text-muted">
               Which of your site's actions are forwarded to the platforms above. Each one is also pushed to the
               data layer for Tag Manager under the name <code className="font-mono">kf_&lt;event&gt;</code>,
               whether it is switched on here or not.
@@ -501,21 +499,21 @@ function MarketingPage() {
               return (
                 <div
                   key={e.key}
-                  className="mb-3 flex items-start justify-between gap-4 rounded-[11px] border px-[14px] py-3"
-                  style={{ borderColor: "var(--border)" }}
+                  className="mb-3 flex items-start justify-between gap-4 rounded-control border px-[14px] py-3 border-line"
                 >
                   <div className="min-w-0">
-                    <div className="text-[13.5px] font-semibold">{e.label}</div>
-                    <div className="mt-1 text-[12.5px] leading-relaxed" style={{ color: "var(--text3)" }}>
+                    <div className="text-ui font-semibold">{e.label}</div>
+                    <div className="mt-1 text-caption leading-relaxed text-faint">
                       {e.hint}
                     </div>
-                    <div className="font-mono mt-1.5 text-[11.5px]" style={{ color: "var(--text3)" }}>
+                    <div className="font-mono mt-1.5 text-caption text-faint">
                       Sent as: {e.sends}
                     </div>
                   </div>
                   <Toggle
-                    on={on}
-                    onClick={() => set("events", { ...(tracking.events ?? {}), [e.key]: !on })}
+                    checked={on}
+                    onChange={() => set("events", { ...(tracking.events ?? {}), [e.key]: !on })}
+                    label={`Forward "${e.label}" to your marketing platforms`}
                   />
                 </div>
               );
@@ -547,22 +545,20 @@ function MarketingPage() {
             ].map((row) => (
               <div
                 key={row.key}
-                className="mb-3 flex items-start justify-between gap-4 rounded-[11px] border px-[14px] py-3"
-                style={{ borderColor: "var(--border)" }}
+                className="mb-3 flex items-start justify-between gap-4 rounded-control border px-[14px] py-3 border-line"
               >
                 <div className="min-w-0">
-                  <div className="text-[13.5px] font-semibold">{row.label}</div>
-                  <div className="mt-1 text-[12.5px] leading-relaxed" style={{ color: "var(--text3)" }}>
+                  <div className="text-ui font-semibold">{row.label}</div>
+                  <div className="mt-1 text-caption leading-relaxed text-faint">
                     {row.hint}
                   </div>
                 </div>
-                <Toggle on={row.value} onClick={() => set(row.key, !row.value)} />
+                <Toggle checked={row.value} onChange={() => set(row.key, !row.value)} label={row.label} />
               </div>
             ))}
 
             <div
-              className="mt-4 rounded-[11px] border px-[14px] py-3 text-[12.5px] leading-relaxed"
-              style={{ borderColor: "var(--border)", background: "var(--panel2)", color: "var(--text3)" }}
+              className="mt-4 rounded-control border px-[14px] py-3 text-caption leading-relaxed border-line bg-raised text-faint"
             >
               There is deliberately no box for pasting raw script tags. Anything saved here runs on every
               visitor's browser, so a single mistyped tag could break the site or leak data — and a stolen
@@ -576,7 +572,7 @@ function MarketingPage() {
       {/* Sticky save bar: the tabs make it easy to change something on one tab
           and navigate away from another without noticing. */}
       <div
-        className="sticky bottom-0 z-10 -mx-1 mt-4 flex flex-wrap items-center gap-3 rounded-[12px] border px-4 py-3"
+        className="sticky bottom-0 z-10 -mx-1 mt-4 flex flex-wrap items-center gap-3 rounded-control border px-4 py-3"
         style={{
           borderColor: dirty ? "rgba(255,106,0,.45)" : "var(--border)",
           background: "var(--panel)",
@@ -595,9 +591,9 @@ function MarketingPage() {
             Discard
           </Button>
         ) : null}
-        <span className="text-[12.5px]" style={{ color: dirty ? "#FF9A4D" : "var(--text3)" }}>
+        <span className="text-caption" style={{ color: dirty ? "#FF9A4D" : "var(--text3)" }}>
           {justSaved ? (
-            <span className="flex items-center gap-1.5" style={{ color: "#4ADE80" }}>
+            <span className="flex items-center gap-1.5 text-success">
               <Check size={14} /> Saved — live on your site within a few minutes
             </span>
           ) : dirty ? (
@@ -610,8 +606,7 @@ function MarketingPage() {
           href="https://tagassistant.google.com/"
           target="_blank"
           rel="noopener noreferrer"
-          className="ml-auto flex items-center gap-1.5 text-[12.5px]"
-          style={{ color: "var(--text3)" }}
+          className="ml-auto flex items-center gap-1.5 text-caption text-faint"
         >
           Check with Tag Assistant <ExternalLink size={12} />
         </a>

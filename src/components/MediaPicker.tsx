@@ -86,7 +86,7 @@ export function MediaPicker({
 
   return (
     <div className="mb-4">
-      <div className="mb-1.5 text-[12.5px] font-semibold" style={{ color: "var(--text2)" }}>
+      <div className="mb-1.5 text-caption font-semibold text-muted">
         Images
       </div>
 
@@ -95,24 +95,22 @@ export function MediaPicker({
           {value.map((url, i) => (
             <div
               key={url}
-              className="flex items-center gap-2.5 rounded-[11px] border p-2"
-              style={{ borderColor: "var(--border)", background: "var(--panel2)" }}
+              className="flex items-center gap-2.5 rounded-control border p-2 border-line bg-raised"
             >
               <img
                 src={url}
                 alt=""
-                className="h-11 w-11 shrink-0 rounded-[8px] object-cover"
-                style={{ background: "var(--panel)" }}
+                className="h-11 w-11 shrink-0 rounded-xs object-cover bg-panel"
                 onError={(e) => {
                   (e.currentTarget as HTMLImageElement).style.opacity = "0.25";
                 }}
               />
-              <span className="font-mono min-w-0 flex-1 truncate text-[11.5px]" style={{ color: "var(--text3)" }}>
+              <span className="font-mono min-w-0 flex-1 truncate text-caption text-faint">
                 {url}
               </span>
               {i === 0 ? (
                 <span
-                  className="font-mono shrink-0 rounded-full px-2 py-0.5 text-[10px] tracking-[.06em]"
+                  className="font-mono shrink-0 rounded-full px-2 py-0.5 text-label tracking-[.06em]"
                   style={{ background: "rgba(255,106,0,.14)", color: "#FF9A4D" }}
                   title="The image the site shows for this item"
                 >
@@ -122,8 +120,7 @@ export function MediaPicker({
                 <button
                   type="button"
                   onClick={() => move(i, i - 1)}
-                  className="shrink-0 rounded-[7px] border px-2 py-1 text-[11px]"
-                  style={{ borderColor: "var(--border)", color: "var(--text2)" }}
+                  className="shrink-0 rounded-xs border px-2 py-1 text-label border-line text-muted"
                   title="Make this the main image"
                 >
                   ↑
@@ -133,8 +130,7 @@ export function MediaPicker({
                 type="button"
                 onClick={() => onChange(value.filter((u) => u !== url))}
                 aria-label="Remove image"
-                className="grid h-8 w-8 shrink-0 place-items-center rounded-[8px] border"
-                style={{ borderColor: "var(--border)", color: "var(--text3)" }}
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-xs border border-line text-faint"
               >
                 <Trash2 size={14} />
               </button>
@@ -143,11 +139,10 @@ export function MediaPicker({
         </div>
       ) : (
         <div
-          className="mb-2.5 grid place-items-center gap-1 rounded-[11px] border border-dashed py-6 text-center"
-          style={{ borderColor: "var(--bstrong)", background: "var(--panel2)" }}
+          className="mb-2.5 grid place-items-center gap-1 rounded-control border border-dashed py-6 text-center border-line-strong bg-raised"
         >
-          <ImagePlus size={18} style={{ color: "var(--text3)" }} />
-          <div className="text-[13px]" style={{ color: "var(--text3)" }}>
+          <ImagePlus size={18} className="text-faint" />
+          <div className="text-ui text-faint">
             No image yet
           </div>
         </div>
@@ -159,17 +154,16 @@ export function MediaPicker({
 
       {open ? (
         <div
-          className="mt-2.5 rounded-[12px] border p-3"
-          style={{ borderColor: "var(--border)", background: "var(--panel2)" }}
+          className="mt-2.5 rounded-control border p-3 border-line bg-raised"
         >
-          <div className="mb-3 flex overflow-hidden rounded-[9px] border" style={{ borderColor: "var(--border)" }}>
+          <div className="mb-3 flex overflow-hidden rounded-control border border-line">
             {(["upload", "library"] as const).map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setTab(t)}
                 aria-pressed={tab === t}
-                className="flex flex-1 items-center justify-center gap-1.5 px-3 py-2 text-[12.5px] font-semibold capitalize"
+                className="flex flex-1 items-center justify-center gap-1.5 px-3 py-2 text-caption font-semibold capitalize"
                 style={{
                   background: tab === t ? "rgba(255,106,0,.12)" : "transparent",
                   color: tab === t ? "var(--text)" : "var(--text2)",
@@ -198,7 +192,7 @@ export function MediaPicker({
               <Button type="button" onClick={() => fileRef.current?.click()} disabled={busy}>
                 {busy ? "Uploading…" : "Choose a file"}
               </Button>
-              <p className="mt-2 text-[12px]" style={{ color: "var(--text3)" }}>
+              <p className="mt-2 text-caption text-faint">
                 JPEG, PNG, WebP, GIF, AVIF, MP4 or PDF — up to 10 MB. SVG is not accepted.
               </p>
             </div>
@@ -215,14 +209,14 @@ export function MediaPicker({
                       key={m.id}
                       type="button"
                       onClick={() => (chosen ? onChange(value.filter((u) => u !== m.url)) : add(m.url))}
-                      className="relative aspect-square overflow-hidden rounded-[9px] border"
+                      className="relative aspect-square overflow-hidden rounded-control border"
                       style={{ borderColor: chosen ? "#FF6A00" : "var(--border)" }}
                       title={m.url}
                     >
                       <img src={m.url} alt="" className="h-full w-full object-cover" />
                       {chosen ? (
                         <span
-                          className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full text-[11px]"
+                          className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full text-label"
                           style={{ background: "#FF6A00", color: "#fff" }}
                         >
                           <X size={11} />
@@ -233,7 +227,7 @@ export function MediaPicker({
                 })}
               </div>
             ) : (
-              <p className="py-4 text-center text-[13px]" style={{ color: "var(--text3)" }}>
+              <p className="py-4 text-center text-ui text-faint">
                 Nothing in the library yet — upload a file first.
               </p>
             )

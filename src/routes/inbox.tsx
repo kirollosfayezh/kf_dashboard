@@ -3,7 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { api } from "@/services/http";
 import type { Lead, LeadStatus } from "@/services/domain-types";
 import { formatDate, initials } from "@/lib/utils";
-import { Card, EmptyState, ErrorBanner, Pill, SectionHead, Spinner } from "@/components/ui";
+import { Card, EmptyState, ErrorBanner, Pill,
+  toneForStatus, SectionHead, Spinner } from "@/components/ui";
 
 export const Route = createFileRoute("/inbox")({
   component: InboxPage,
@@ -82,7 +83,7 @@ function InboxPage() {
                   type="button"
                   onClick={() => setFilter(f)}
                   aria-pressed={on}
-                  className="rounded-[9px] border px-[15px] py-[9px] text-[13px] font-semibold"
+                  className="rounded-control border px-[15px] py-[9px] text-ui font-semibold"
                   style={{
                     borderColor: on ? "rgba(255,106,0,.45)" : "var(--border)",
                     background: on ? "rgba(255,106,0,.1)" : "var(--panel)",
@@ -126,25 +127,23 @@ function InboxPage() {
               >
                 <div className="flex flex-wrap items-center gap-3">
                   <div
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full border text-[12.5px] font-bold"
-                    style={{ background: "var(--panel2)", borderColor: "var(--border)" }}
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full border text-caption font-bold bg-raised border-line"
                   >
                     {initials(lead.name)}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-[14.5px] font-semibold">{lead.name}</div>
-                    <a href={`mailto:${lead.email}`} className="font-mono block truncate text-[12.5px]">
+                    <div className="truncate text-body font-semibold">{lead.name}</div>
+                    <a href={`mailto:${lead.email}`} className="font-mono block truncate text-caption">
                       {lead.email}
                     </a>
                   </div>
-                  <span className="font-mono text-[11px]" style={{ color: "var(--text3)" }}>
+                  <span className="font-mono text-label text-faint">
                     {lead.source.toUpperCase()}
                   </span>
-                  <Pill text={lead.status} />
+                  <Pill tone={toneForStatus(lead.status)}>{lead.status}</Pill>
                   <span
-                    className="font-mono text-[11.5px]"
+                    className="font-mono text-caption text-faint"
                     title={formatDate(lead.createdAt)}
-                    style={{ color: "var(--text3)" }}
                   >
                     {ago(lead.createdAt)}
                   </span>
@@ -152,8 +151,7 @@ function InboxPage() {
 
                 {lead.company || lead.projectType || lead.budget ? (
                   <div
-                    className="font-mono mt-2.5 flex flex-wrap gap-x-2 gap-y-1 text-[11.5px]"
-                    style={{ color: "var(--text3)" }}
+                    className="font-mono mt-2.5 flex flex-wrap gap-x-2 gap-y-1 text-caption text-faint"
                   >
                     {[lead.company, lead.projectType, lead.budget].filter(Boolean).map((v, idx) => (
                       <span key={String(v)}>
@@ -164,15 +162,14 @@ function InboxPage() {
                   </div>
                 ) : null}
 
-                <p className="mt-3 text-[14px] leading-[1.6]" style={{ color: "var(--text2)" }}>
+                <p className="mt-3 text-body leading-[1.6] text-muted">
                   {lead.message}
                 </p>
 
                 <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
                   <a
                     href={`mailto:${lead.email}?subject=Re:%20your%20enquiry`}
-                    className="rounded-[9px] px-4 py-[9px] text-[13px] font-semibold"
-                    style={{ background: "linear-gradient(135deg,#FF6A00,#FF0080)", color: "#fff" }}
+                    className="rounded-control px-4 py-[9px] text-ui font-semibold bg-brand text-white"
                   >
                     Reply
                   </a>
@@ -181,12 +178,7 @@ function InboxPage() {
                       href={`https://wa.me/${phone}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-[9px] border px-4 py-[9px] text-[13px] font-semibold"
-                      style={{
-                        borderColor: "var(--border)",
-                        background: "var(--panel2)",
-                        color: "var(--text)",
-                      }}
+                      className="rounded-control border px-4 py-[9px] text-ui font-semibold border-line bg-raised text-ink"
                     >
                       WhatsApp
                     </a>
@@ -196,8 +188,7 @@ function InboxPage() {
 
                   {/* The real "archive" is a status — same row position as the mockup. */}
                   <div
-                    className="flex flex-wrap overflow-hidden rounded-[9px] border"
-                    style={{ borderColor: "var(--border)" }}
+                    className="flex flex-wrap overflow-hidden rounded-control border border-line"
                   >
                     {STATUSES.map((s) => {
                       const on = lead.status === s;
@@ -207,7 +198,7 @@ function InboxPage() {
                           type="button"
                           disabled={on || updating === lead.id}
                           onClick={() => void updateStatus(lead, s)}
-                          className="px-3 py-[9px] text-[12.5px] font-semibold disabled:cursor-default"
+                          className="px-3 py-[9px] text-caption font-semibold disabled:cursor-default"
                           style={{
                             background: on ? "rgba(255,106,0,.14)" : "transparent",
                             color: on ? "var(--text)" : "var(--text3)",

@@ -70,16 +70,15 @@ export function ChartCard({
     <Card>
       <div className="mb-[18px] flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h2 className="font-display text-[17px] font-semibold tracking-[-.01em]">{title}</h2>
+          <h2 className="font-display text-section font-semibold tracking-[-.01em]">{title}</h2>
           {subtitle ? (
-            <p className="mt-[5px] text-[13.5px]" style={{ color: "var(--text2)" }}>
+            <p className="mt-[5px] text-ui text-muted">
               {subtitle}
             </p>
           ) : null}
         </div>
         <div
-          className="flex shrink-0 overflow-hidden rounded-[9px] border"
-          style={{ borderColor: "var(--border)" }}
+          className="flex shrink-0 overflow-hidden rounded-control border border-line"
         >
           {(["chart", "table"] as const).map((v) => (
             <button
@@ -87,7 +86,7 @@ export function ChartCard({
               type="button"
               onClick={() => setView(v)}
               aria-pressed={view === v}
-              className="font-mono px-2.5 py-1.5 text-[10.5px] uppercase tracking-[.08em]"
+              className="font-mono px-2.5 py-1.5 text-label uppercase tracking-[.08em]"
               style={{
                 background: view === v ? "var(--hover)" : "transparent",
                 color: view === v ? "var(--text)" : "var(--text3)",
@@ -159,7 +158,7 @@ export function TrendChart({ data }: { data: TrendPoint[] }) {
       {/* A legend is always present for two series. */}
       <div className="mb-3 flex flex-wrap gap-4">
         {SERIES.map((s) => (
-          <span key={s.key} className="flex items-center gap-2 text-[12.5px]" style={{ color: "var(--text2)" }}>
+          <span key={s.key} className="flex items-center gap-2 text-caption text-muted">
             <span className="h-[3px] w-[14px] rounded-full" style={{ background: s.color }} />
             {s.label}
           </span>
@@ -273,7 +272,7 @@ export function TrendChart({ data }: { data: TrendPoint[] }) {
 
         {hover != null && active && width > 0 ? (
           <div
-            className="pointer-events-none absolute z-10 rounded-[10px] border px-3 py-2 text-[12.5px]"
+            className="pointer-events-none absolute z-10 rounded-control border px-3 py-2 text-caption"
             style={{
               borderColor: "var(--border)",
               background: "var(--panel2)",
@@ -283,12 +282,12 @@ export function TrendChart({ data }: { data: TrendPoint[] }) {
               minWidth: 140,
             }}
           >
-            <div className="font-mono mb-1 text-[10.5px] tracking-[.06em]" style={{ color: "var(--text3)" }}>
+            <div className="font-mono mb-1 text-label tracking-[.06em] text-faint">
               {shortDay(active.day).toUpperCase()}
             </div>
             {SERIES.map((s) => (
               <div key={s.key} className="flex items-center justify-between gap-4">
-                <span className="flex items-center gap-2" style={{ color: "var(--text2)" }}>
+                <span className="flex items-center gap-2 text-muted">
                   <span className="h-[3px] w-[10px] rounded-full" style={{ background: s.color }} />
                   {s.label}
                 </span>
@@ -340,7 +339,7 @@ export function RankedBars({
 }) {
   if (!rows.length) {
     return (
-      <p className="py-6 text-center text-[13.5px]" style={{ color: "var(--text3)" }}>
+      <p className="py-6 text-center text-ui text-faint">
         {emptyLabel}
       </p>
     );
@@ -352,13 +351,12 @@ export function RankedBars({
         <div key={r.label} title={`${r.label} — ${r.value.toLocaleString()} ${unit}`}>
           <div className="mb-1.5 flex items-baseline justify-between gap-3">
             <span
-              className={`min-w-0 truncate text-[13.5px] ${r.mono ? "font-mono text-[12.5px]" : ""}`}
-              style={{ color: "var(--text)" }}
+              className={`min-w-0 truncate text-ui text-ink ${r.mono ? "font-mono text-caption" : ""}`}
             >
               {r.label}
             </span>
             <span
-              className="font-mono shrink-0 text-[12.5px]"
+              className="font-mono shrink-0 text-caption"
               style={{ color: "var(--text2)", fontVariantNumeric: "tabular-nums" }}
             >
               {r.value.toLocaleString()}
@@ -399,20 +397,20 @@ export function ScrollTable({
 }) {
   if (!rows.length) {
     return (
-      <p className="py-6 text-center text-[13.5px]" style={{ color: "var(--text3)" }}>
+      <p className="py-6 text-center text-ui text-faint">
         Nothing recorded in this range yet.
       </p>
     );
   }
   return (
     <div className="kf-tw max-h-[260px] overflow-y-auto">
-      <table className="w-full border-collapse text-[13px]">
+      <table className="w-full border-collapse text-ui">
         <thead>
           <tr>
             {head.map((h, i) => (
               <th
                 key={h}
-                className="font-mono sticky top-0 border-b px-2 py-2 text-[10.5px] tracking-[.08em]"
+                className="font-mono sticky top-0 border-b px-2 py-2 text-label tracking-[.08em]"
                 style={{
                   borderColor: "var(--border)",
                   background: "var(--panel)",
@@ -478,8 +476,7 @@ export function MiniColumns({ data }: { data: TrendPoint[] }) {
         ))}
       </div>
       <div
-        className="font-mono mt-2 flex justify-between text-[10.5px]"
-        style={{ color: "var(--text3)" }}
+        className="font-mono mt-2 flex justify-between text-label text-faint"
       >
         <span>{data.length ? shortDay(data[0].day) : ""}</span>
         <span>peak {compact(peak)}</span>
@@ -510,7 +507,7 @@ export interface SourceRow {
 export function SourceShareBars({ rows }: { rows: SourceRow[] }) {
   if (!rows.length) {
     return (
-      <p className="py-6 text-center text-[13.5px]" style={{ color: "var(--text3)" }}>
+      <p className="py-6 text-center text-ui text-faint">
         No traffic sources recorded in this range.
       </p>
     );
@@ -519,7 +516,7 @@ export function SourceShareBars({ rows }: { rows: SourceRow[] }) {
     <div className="flex flex-col gap-[14px]">
       {rows.map((r) => (
         <div key={r.label} title={`${r.label} — ${r.events.toLocaleString()} events (${r.share}%)`}>
-          <div className="mb-1.5 flex items-baseline justify-between gap-3 text-[13.5px]">
+          <div className="mb-1.5 flex items-baseline justify-between gap-3 text-ui">
             <span className="flex min-w-0 items-center gap-2">
               <span
                 className="h-[9px] w-[9px] shrink-0 rounded-full"
@@ -529,7 +526,7 @@ export function SourceShareBars({ rows }: { rows: SourceRow[] }) {
               <span className="truncate">{r.label}</span>
             </span>
             <span
-              className="font-mono shrink-0 text-[12.5px]"
+              className="font-mono shrink-0 text-caption"
               style={{ color: "var(--text2)", fontVariantNumeric: "tabular-nums" }}
             >
               {r.share}%

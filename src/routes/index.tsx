@@ -5,7 +5,8 @@ import type { ContentItem, Lead } from "@/services/domain-types";
 import { CONTENT_COLLECTIONS } from "@/services/domain-types";
 import { fetchSummary, fillDaily, type AnalyticsSummary } from "@/services/analytics";
 import { MiniColumns, compact } from "@/components/charts";
-import { Card, ErrorBanner, PanelHead, Pill, SectionHead, Spinner, StatTile } from "@/components/ui";
+import { Card, ErrorBanner, PanelHead, Pill,
+  toneForStatus, SectionHead, Spinner, StatTile } from "@/components/ui";
 import { initials } from "@/lib/utils";
 import { useAuth, type AdminUser } from "@/store/auth";
 
@@ -122,7 +123,7 @@ function OverviewPage() {
               label="Enquiries"
               value={String(data.leads.length)}
               caption={data.newLeads > 0 ? `${data.newLeads} new` : "all followed up"}
-              captionTone={data.newLeads > 0 ? "up" : "muted"}
+              tone={data.newLeads > 0 ? "success" : "neutral"}
               delay={0.12}
             />
             <StatTile
@@ -142,7 +143,7 @@ function OverviewPage() {
               {data.summary ? (
                 <MiniColumns data={daily} />
               ) : (
-                <p className="py-10 text-center text-[13.5px]" style={{ color: "var(--text3)" }}>
+                <p className="py-10 text-center text-ui text-faint">
                   Traffic data is not available right now.
                 </p>
               )}
@@ -151,7 +152,7 @@ function OverviewPage() {
             <Card>
               <PanelHead title="Latest enquiries" subtitle="Straight from the contact form." />
               {latest.length === 0 ? (
-                <p className="py-10 text-center text-[13.5px]" style={{ color: "var(--text3)" }}>
+                <p className="py-10 text-center text-ui text-faint">
                   No enquiries yet — they will appear here the moment one comes in.
                 </p>
               ) : (
@@ -167,21 +168,20 @@ function OverviewPage() {
                       }}
                     >
                       <div
-                        className="grid h-8 w-8 shrink-0 place-items-center rounded-full border text-[11.5px] font-bold"
-                        style={{ background: "var(--panel2)", borderColor: "var(--border)" }}
+                        className="grid h-8 w-8 shrink-0 place-items-center rounded-full border text-caption font-bold bg-raised border-line"
                       >
                         {initials(m.name)}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-[13.5px] font-semibold">{m.name}</span>
-                          <Pill text={m.status} />
+                          <span className="text-ui font-semibold">{m.name}</span>
+                          <Pill tone={toneForStatus(m.status)}>{m.status}</Pill>
                         </div>
-                        <div className="truncate text-[12.5px]" style={{ color: "var(--text2)" }}>
+                        <div className="truncate text-caption text-muted">
                           {m.message}
                         </div>
                       </div>
-                      <span className="font-mono shrink-0 text-[11px]" style={{ color: "var(--text3)" }}>
+                      <span className="font-mono shrink-0 text-label text-faint">
                         {ago(m.createdAt)}
                       </span>
                     </Link>
@@ -200,12 +200,7 @@ function OverviewPage() {
                     key={a.label}
                     type="button"
                     onClick={() => navigate({ to: a.to })}
-                    className="rounded-[10px] border px-4 py-2.5 text-[13.5px] font-semibold"
-                    style={{
-                      borderColor: "var(--border)",
-                      background: "var(--panel2)",
-                      color: "var(--text)",
-                    }}
+                    className="rounded-control border px-4 py-2.5 text-ui font-semibold border-line bg-raised text-ink"
                   >
                     {a.label}
                   </button>
