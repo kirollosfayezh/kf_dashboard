@@ -57,7 +57,7 @@ const readTranslated = (v: Partial<Record<LangCode, string>> | undefined): Trans
 });
 
 /** The `meta` keys this form exposes as their own inputs, beyond tag/result/points. */
-const META_TEXT_FIELDS = ["demoUrl", "repoUrl", "client", "year", "duration", "badge", "ctaLabel", "ctaUrl", "startsAt", "endsAt"] as const;
+const META_TEXT_FIELDS = ["demoUrl", "repoUrl", "client", "year", "duration", "badge", "ctaLabel", "ctaUrl", "startsAt", "endsAt", "delaySeconds"] as const;
 type MetaTextField = (typeof META_TEXT_FIELDS)[number];
 
 interface FormState {
@@ -610,6 +610,20 @@ export function ContentCrudScreen({
                       type="date"
                       value={form.links.endsAt}
                       onChange={(e) => setLink("endsAt", e.target.value)}
+                    />
+                  </Field>
+                  <Field
+                    label="Show after (seconds)"
+                    hint="Counted from when the page loads, not from when the offer downloads. 0 shows it immediately; blank means 1.5."
+                  >
+                    <Input
+                      type="number"
+                      min={0}
+                      max={60}
+                      step={0.5}
+                      value={form.links.delaySeconds}
+                      onChange={(e) => setLink("delaySeconds", e.target.value)}
+                      placeholder="1.5"
                     />
                   </Field>
                 </div>
