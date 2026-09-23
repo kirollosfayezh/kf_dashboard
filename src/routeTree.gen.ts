@@ -17,6 +17,7 @@ import { Route as ChatRouteImport } from './routes/chat'
 import { Route as FaqsRouteImport } from './routes/faqs'
 import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as MarketingRouteImport } from './routes/marketing'
 import { Route as MediaRouteImport } from './routes/media'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as SeoRouteImport } from './routes/seo'
@@ -65,6 +66,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MarketingRoute = MarketingRouteImport.update({
+  id: '/marketing',
+  path: '/marketing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MediaRoute = MediaRouteImport.update({
   id: '/media',
   path: '/media',
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/faqs': typeof FaqsRoute
   '/inbox': typeof InboxRoute
   '/login': typeof LoginRoute
+  '/marketing': typeof MarketingRoute
   '/media': typeof MediaRoute
   '/projects': typeof ProjectsRoute
   '/seo': typeof SeoRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/faqs': typeof FaqsRoute
   '/inbox': typeof InboxRoute
   '/login': typeof LoginRoute
+  '/marketing': typeof MarketingRoute
   '/media': typeof MediaRoute
   '/projects': typeof ProjectsRoute
   '/seo': typeof SeoRoute
@@ -145,6 +153,7 @@ export interface FileRoutesById {
   '/faqs': typeof FaqsRoute
   '/inbox': typeof InboxRoute
   '/login': typeof LoginRoute
+  '/marketing': typeof MarketingRoute
   '/media': typeof MediaRoute
   '/projects': typeof ProjectsRoute
   '/seo': typeof SeoRoute
@@ -164,6 +173,7 @@ export interface FileRouteTypes {
     | '/faqs'
     | '/inbox'
     | '/login'
+    | '/marketing'
     | '/media'
     | '/projects'
     | '/seo'
@@ -181,6 +191,7 @@ export interface FileRouteTypes {
     | '/faqs'
     | '/inbox'
     | '/login'
+    | '/marketing'
     | '/media'
     | '/projects'
     | '/seo'
@@ -198,6 +209,7 @@ export interface FileRouteTypes {
     | '/faqs'
     | '/inbox'
     | '/login'
+    | '/marketing'
     | '/media'
     | '/projects'
     | '/seo'
@@ -216,6 +228,7 @@ export interface RootRouteChildren {
   FaqsRoute: typeof FaqsRoute
   InboxRoute: typeof InboxRoute
   LoginRoute: typeof LoginRoute
+  MarketingRoute: typeof MarketingRoute
   MediaRoute: typeof MediaRoute
   ProjectsRoute: typeof ProjectsRoute
   SeoRoute: typeof SeoRoute
@@ -283,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/marketing': {
+      id: '/marketing'
+      path: '/marketing'
+      fullPath: '/marketing'
+      preLoaderRoute: typeof MarketingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/media': {
       id: '/media'
       path: '/media'
@@ -344,6 +364,7 @@ const rootRouteChildren: RootRouteChildren = {
   FaqsRoute: FaqsRoute,
   InboxRoute: InboxRoute,
   LoginRoute: LoginRoute,
+  MarketingRoute: MarketingRoute,
   MediaRoute: MediaRoute,
   ProjectsRoute: ProjectsRoute,
   SeoRoute: SeoRoute,

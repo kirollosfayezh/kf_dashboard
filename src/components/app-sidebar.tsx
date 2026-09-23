@@ -17,6 +17,7 @@ import {
   ExternalLink,
   X,
   Search,
+  Megaphone,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/store/auth";
@@ -54,6 +55,7 @@ const NAV: { group: string; items: { to: string; label: string; icon: React.Elem
     group: "CONFIGURATION",
     items: [
       { to: "/seo", label: "SEO", icon: Search },
+      { to: "/marketing", label: "Marketing", icon: Megaphone },
       { to: "/media", label: "Media", icon: Images },
       { to: "/settings", label: "Site settings", icon: Settings },
     ],

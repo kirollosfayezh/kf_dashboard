@@ -60,6 +60,21 @@ export const CONTENT_COLLECTIONS: { key: ContentCollection; label: string }[] = 
   { key: "aboutSections", label: "About sections" },
 ];
 
+/** Marketing tags edited on the Marketing screen and read by the public site. */
+export interface TrackingSettings {
+  gtmId?: string;
+  googleAnalyticsId?: string;
+  googleAdsId?: string;
+  googleAdsLabel?: string;
+  metaPixelId?: string;
+  tiktokPixelId?: string;
+  snapchatPixelId?: string;
+  events?: Record<string, boolean>;
+  respectDnt?: boolean;
+  consentMode?: boolean;
+  debug?: boolean;
+}
+
 export interface SiteSettings extends Record<string, unknown> {
   siteName: string;
   tagline: LocalizedText;
@@ -68,7 +83,7 @@ export interface SiteSettings extends Record<string, unknown> {
   languages: { code: string; label: string; enabled: boolean }[];
   defaultLanguage: string;
   seo: { defaultTitle: string; defaultDescription: string };
-  pixels: { googleAnalyticsId?: string; metaPixelId?: string };
+  pixels: TrackingSettings;
   contact: { email?: string; phone?: string; whatsapp?: string };
   updatedAt: string;
 }

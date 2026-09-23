@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { api } from "@/services/http";
 import type { SiteSettings } from "@/services/domain-types";
 import {
+  Button,
   Card,
   ErrorBanner,
   PanelHead,
@@ -222,20 +223,19 @@ function SettingsPage() {
           </Field>
         </Card>
 
+        {/* Tracking moved to its own Marketing screen. Two bare inputs between
+            the brand palette and the contact email gave an editor no way to tell
+            a Measurement ID from a container ID, and no room for the warning
+            that matters — a platform configured both here and in Tag Manager
+            counts every enquiry twice. */}
         <Card>
-          <PanelHead title="Pixels" subtitle="Paste an ID and the tag deploys site-wide." />
-          <Field label="Google Analytics ID">
-            <Input
-              value={settings.pixels?.googleAnalyticsId ?? ""}
-              onChange={(e) => setSettings({ ...settings, pixels: { ...settings.pixels, googleAnalyticsId: e.target.value } })}
-            />
-          </Field>
-          <Field label="Meta Pixel ID">
-            <Input
-              value={settings.pixels?.metaPixelId ?? ""}
-              onChange={(e) => setSettings({ ...settings, pixels: { ...settings.pixels, metaPixelId: e.target.value } })}
-            />
-          </Field>
+          <PanelHead
+            title="Analytics & ad tags"
+            subtitle="Tag Manager, Analytics 4, Google Ads, Meta, TikTok and Snapchat now live on their own screen, with format checks and setup guidance."
+          />
+          <Link to="/marketing">
+            <Button>Open Marketing</Button>
+          </Link>
         </Card>
 
         <Card>
