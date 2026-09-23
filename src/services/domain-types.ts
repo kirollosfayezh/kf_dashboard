@@ -49,7 +49,8 @@ export type ContentCollection =
   | "faqs"
   | "blogPosts"
   | "aboutSections"
-  | "legalPages";
+  | "legalPages"
+  | "promos";
 
 export const CONTENT_COLLECTIONS: { key: ContentCollection; label: string }[] = [
   { key: "projects", label: "Projects" },

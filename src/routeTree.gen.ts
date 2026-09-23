@@ -21,6 +21,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as MarketingRouteImport } from './routes/marketing'
 import { Route as MediaRouteImport } from './routes/media'
 import { Route as ProjectsRouteImport } from './routes/projects'
+import { Route as PromosRouteImport } from './routes/promos'
 import { Route as SeoRouteImport } from './routes/seo'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -87,6 +88,11 @@ const ProjectsRoute = ProjectsRouteImport.update({
   path: '/projects',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PromosRoute = PromosRouteImport.update({
+  id: '/promos',
+  path: '/promos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SeoRoute = SeoRouteImport.update({
   id: '/seo',
   path: '/seo',
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/marketing': typeof MarketingRoute
   '/media': typeof MediaRoute
   '/projects': typeof ProjectsRoute
+  '/promos': typeof PromosRoute
   '/seo': typeof SeoRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
@@ -145,6 +152,7 @@ export interface FileRoutesByTo {
   '/marketing': typeof MarketingRoute
   '/media': typeof MediaRoute
   '/projects': typeof ProjectsRoute
+  '/promos': typeof PromosRoute
   '/seo': typeof SeoRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
@@ -165,6 +173,7 @@ export interface FileRoutesById {
   '/marketing': typeof MarketingRoute
   '/media': typeof MediaRoute
   '/projects': typeof ProjectsRoute
+  '/promos': typeof PromosRoute
   '/seo': typeof SeoRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
@@ -186,6 +195,7 @@ export interface FileRouteTypes {
     | '/marketing'
     | '/media'
     | '/projects'
+    | '/promos'
     | '/seo'
     | '/services'
     | '/settings'
@@ -205,6 +215,7 @@ export interface FileRouteTypes {
     | '/marketing'
     | '/media'
     | '/projects'
+    | '/promos'
     | '/seo'
     | '/services'
     | '/settings'
@@ -224,6 +235,7 @@ export interface FileRouteTypes {
     | '/marketing'
     | '/media'
     | '/projects'
+    | '/promos'
     | '/seo'
     | '/services'
     | '/settings'
@@ -244,6 +256,7 @@ export interface RootRouteChildren {
   MarketingRoute: typeof MarketingRoute
   MediaRoute: typeof MediaRoute
   ProjectsRoute: typeof ProjectsRoute
+  PromosRoute: typeof PromosRoute
   SeoRoute: typeof SeoRoute
   ServicesRoute: typeof ServicesRoute
   SettingsRoute: typeof SettingsRoute
@@ -337,6 +350,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/promos': {
+      id: '/promos'
+      path: '/promos'
+      fullPath: '/promos'
+      preLoaderRoute: typeof PromosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/seo': {
       id: '/seo'
       path: '/seo'
@@ -388,6 +408,7 @@ const rootRouteChildren: RootRouteChildren = {
   MarketingRoute: MarketingRoute,
   MediaRoute: MediaRoute,
   ProjectsRoute: ProjectsRoute,
+  PromosRoute: PromosRoute,
   SeoRoute: SeoRoute,
   ServicesRoute: ServicesRoute,
   SettingsRoute: SettingsRoute,

@@ -57,7 +57,7 @@ const readTranslated = (v: Partial<Record<LangCode, string>> | undefined): Trans
 });
 
 /** The `meta` keys this form exposes as their own inputs, beyond tag/result/points. */
-const META_TEXT_FIELDS = ["demoUrl", "repoUrl", "client", "year", "duration"] as const;
+const META_TEXT_FIELDS = ["demoUrl", "repoUrl", "client", "year", "duration", "badge", "ctaLabel", "ctaUrl", "startsAt", "endsAt"] as const;
 type MetaTextField = (typeof META_TEXT_FIELDS)[number];
 
 interface FormState {
@@ -564,6 +564,62 @@ export function ContentCrudScreen({
               Projects only. Every other collection would just carry five empty
               keys, and the site reads these solely from a project.
             */}
+            {/* Offers only: the popup's badge, its button and when it runs. */}
+            {collection === "promos" ? (
+              <>
+                <div
+                  className="mb-2 mt-1 border-t pt-4 text-caption font-semibold text-muted"
+                  style={{ borderColor: "var(--border)" }}
+                >
+                  Offer details
+                </div>
+                <div
+                  className="grid gap-x-5"
+                  style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 240px), 1fr))" }}
+                >
+                  <Field label="Badge" hint="The small chip over the photo, e.g. “Limited offer”.">
+                    <Input
+                      value={form.links.badge}
+                      onChange={(e) => setLink("badge", e.target.value)}
+                      placeholder="Limited offer"
+                    />
+                  </Field>
+                  <Field label="Button label" hint="Defaults to “Claim this offer”.">
+                    <Input
+                      value={form.links.ctaLabel}
+                      onChange={(e) => setLink("ctaLabel", e.target.value)}
+                      placeholder="Claim this offer"
+                    />
+                  </Field>
+                  <Field label="Button goes to" hint="A page on your site like /contact, or a full https:// link.">
+                    <Input
+                      value={form.links.ctaUrl}
+                      onChange={(e) => setLink("ctaUrl", e.target.value)}
+                      placeholder="/contact"
+                    />
+                  </Field>
+                  <Field label="Starts" hint="Leave blank to start immediately.">
+                    <Input
+                      type="date"
+                      value={form.links.startsAt}
+                      onChange={(e) => setLink("startsAt", e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Ends" hint="Runs to the end of this day, then stops on its own.">
+                    <Input
+                      type="date"
+                      value={form.links.endsAt}
+                      onChange={(e) => setLink("endsAt", e.target.value)}
+                    />
+                  </Field>
+                </div>
+                <div className="mb-4 rounded-control border border-line bg-raised px-3.5 py-3 text-caption text-faint">
+                  Only the first published offer inside its window is shown, so publishing a second one
+                  queues it rather than showing both. A visitor who dismisses it does not see it again.
+                </div>
+              </>
+            ) : null}
+
             {collection === "projects" ? (
               <>
                 <div

@@ -51,6 +51,7 @@ const NAV: { group: string; items: { to: string; label: string; icon: React.Elem
       { to: "/faqs", label: "FAQ", icon: HelpCircle },
       { to: "/aboutSections", label: "About / founder", icon: User2 },
       { to: "/legalPages", label: "Legal pages", icon: Scale },
+      { to: "/promos", label: "Offers & popup", icon: Megaphone },
     ],
   },
   {
