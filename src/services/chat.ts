@@ -33,7 +33,10 @@ export function setAgentTyping(visitorId: string, typing: boolean): Promise<unkn
 
 export interface ThreadUpdatedPayload {
   thread: ChatThread;
-  message: ChatMessage;
+  /** Absent when only the thread changed (e.g. the visitor added their phone). */
+  message?: ChatMessage;
+  /** A thread folded into this one — it no longer exists and leaves the list. */
+  mergedFrom?: string;
 }
 
 export interface TypingPayload {

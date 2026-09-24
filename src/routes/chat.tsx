@@ -30,6 +30,18 @@ function threadName(thread: ChatThread | null | undefined): string {
   return thread?.visitorMeta?.name?.trim() || "Visitor";
 }
 
+/** 🇪🇬 from "EG". */
+function flagOf(country?: string): string {
+  if (!country || !/^[A-Z]{2}$/.test(country)) return "";
+  return country.replace(/./g, (c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65));
+}
+
+/** The visitor's phone with its flag, falling back to whatever contact older threads saved. */
+function contactLine(thread: ChatThread): string {
+  if (thread.phone) return `${flagOf(thread.phoneCountry)} ${thread.phone}`.trim();
+  return thread.visitorMeta?.contact || thread.visitorId;
+}
+
 /** Newest conversation first — mirrors the server's `lastMessageAt` sort. */
 function sortThreads(threads: ChatThread[]): ChatThread[] {
   return [...threads].sort(
@@ -84,9 +96,11 @@ function ChatPage() {
   // Live push channel.
   useEffect(() => {
     const sub = subscribeToChat({
-      onThreadUpdated: ({ thread, message }: ThreadUpdatedPayload) => {
+      onThreadUpdated: ({ thread, message, mergedFrom }: ThreadUpdatedPayload) => {
+        // The open conversation was folded into another thread: follow it there.
+        if (mergedFrom && mergedFrom === activeIdRef.current) setActiveId(thread.visitorId);
         setThreads((prev) => {
-          const rest = (prev ?? []).filter((t) => t.visitorId !== thread.visitorId);
+          const rest = (prev ?? []).filter((t) => t.visitorId !== thread.visitorId && t.visitorId !== mergedFrom);
           return sortThreads([thread, ...rest]);
         });
         if (message?.from === "visitor" && thread.visitorId !== activeIdRef.current) {
@@ -202,7 +216,8 @@ function ChatPage() {
     }
   };
 
-  const contact = active?.visitorMeta?.contact;
+  // Threads from before phones were required may only have a free-text contact.
+  const phone = active?.phone || (active?.visitorMeta?.contact?.startsWith("+") ? active.visitorMeta.contact : undefined);
 
   return (
     <div className="kf-scr">
@@ -277,7 +292,7 @@ function ChatPage() {
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-ui font-semibold">{threadName(t)}</div>
                       <div className="font-mono mt-0.5 truncate text-label text-faint">
-                        {typing[t.visitorId] ? "typing…" : t.visitorMeta?.contact || t.visitorId}
+                        {typing[t.visitorId] ? "typing…" : contactLine(t)}
                       </div>
                     </div>
                     {count > 0 ? (
@@ -312,18 +327,26 @@ function ChatPage() {
                 <div className="min-w-[110px] flex-1">
                   <div className="truncate text-body font-semibold">{threadName(active)}</div>
                   <div className="font-mono truncate text-caption text-muted">
-                    {typing[active.visitorId] ? "typing…" : contact || active.visitorId}
+                    {typing[active.visitorId] ? "typing…" : contactLine(active)}
                   </div>
                 </div>
-                {contact?.includes("+") ? (
-                  <a
-                    href={`https://wa.me/${contact.replace(/[^\d]/g, "")}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="rounded-control border px-3.5 py-2 text-caption font-semibold border-line text-muted"
-                  >
-                    WhatsApp
-                  </a>
+                {phone ? (
+                  <>
+                    <a
+                      href={`tel:${phone}`}
+                      className="rounded-control border px-3.5 py-2 text-caption font-semibold border-line text-muted"
+                    >
+                      Call
+                    </a>
+                    <a
+                      href={`https://wa.me/${phone.replace(/[^\d]/g, "")}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-control border px-3.5 py-2 text-caption font-semibold border-line text-muted"
+                    >
+                      WhatsApp
+                    </a>
+                  </>
                 ) : null}
                 <Pill tone={toneForStatus("new")}>new</Pill>
               </div>

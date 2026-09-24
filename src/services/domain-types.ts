@@ -115,6 +115,10 @@ export interface ChatThread extends Record<string, unknown> {
   /** The id chat routes address a thread by — NOT the Mongo `id` above. */
   visitorId: string;
   visitorMeta?: { name?: string; contact?: string };
+  /** E.164, validated by the backend — every visitor gives one before chatting. */
+  phone?: string;
+  /** ISO country of `phone`, e.g. "EG". */
+  phoneCountry?: string;
   userTyping: boolean;
   lastMessageAt: string;
   createdAt: string;
