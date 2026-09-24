@@ -14,6 +14,8 @@ export interface Lead extends Record<string, unknown> {
   projectType?: string;
   budget?: string;
   message: string;
+  /** The CRM contact this lead was filed under. */
+  contactId?: string;
   createdAt: string;
   updatedAt: string;
 }

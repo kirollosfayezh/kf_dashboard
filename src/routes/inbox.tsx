@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { api } from "@/services/http";
 import type { Lead, LeadStatus } from "@/services/domain-types";
 import { formatDate, initials } from "@/lib/utils";
@@ -173,6 +173,15 @@ function InboxPage() {
                   >
                     Reply
                   </a>
+                  {lead.contactId ? (
+                    <Link
+                      to="/contacts/$id"
+                      params={{ id: lead.contactId }}
+                      className="rounded-control border px-4 py-[9px] text-ui font-semibold border-line text-ink"
+                    >
+                      Open contact
+                    </Link>
+                  ) : null}
                   {phone ? (
                     <a
                       href={`https://wa.me/${phone}`}

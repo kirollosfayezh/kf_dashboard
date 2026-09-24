@@ -17,6 +17,10 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/chat")({
   component: ChatPage,
+  // `?visitor=<id>` opens that conversation — the contact page links here.
+  validateSearch: (s: Record<string, unknown>): { visitor?: string } => ({
+    visitor: typeof s.visitor === "string" ? s.visitor : undefined,
+  }),
 });
 
 const QUICK_REPLIES = [
@@ -51,7 +55,8 @@ function sortThreads(threads: ChatThread[]): ChatThread[] {
 
 function ChatPage() {
   const [threads, setThreads] = useState<ChatThread[] | null>(null);
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const { visitor } = Route.useSearch();
+  const [activeId, setActiveId] = useState<string | null>(visitor ?? null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [unread, setUnread] = useState<Record<string, number>>({});
   const [typing, setTyping] = useState<Record<string, boolean>>({});

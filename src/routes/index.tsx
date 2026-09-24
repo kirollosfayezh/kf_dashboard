@@ -9,6 +9,7 @@ import { Card, ErrorBanner, PanelHead, Pill,
   toneForStatus, SectionHead, Spinner, StatTile } from "@/components/ui";
 import { initials } from "@/lib/utils";
 import { useAuth, type AdminUser } from "@/store/auth";
+import { CrmSummary } from "@/components/crm-summary";
 
 export const Route = createFileRoute("/")({
   component: OverviewPage,
@@ -31,6 +32,9 @@ function ago(iso: string): string {
 }
 
 const QUICK_ACTIONS: { label: string; to: string }[] = [
+  { label: "New quote", to: "/quotes" },
+  { label: "Pipeline", to: "/pipeline" },
+  { label: "Who's online", to: "/visitors" },
   { label: "New article", to: "/blogPosts" },
   { label: "Add project", to: "/projects" },
   { label: "Edit services", to: "/services" },
@@ -133,6 +137,8 @@ function OverviewPage() {
               delay={0.18}
             />
           </div>
+
+          <CrmSummary />
 
           <div
             className="mt-4 grid gap-4"

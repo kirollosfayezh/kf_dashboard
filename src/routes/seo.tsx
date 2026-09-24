@@ -46,6 +46,7 @@ const PAGES: { key: string; label: string; path: string }[] = [
   { key: "blog", label: "Insights", path: "/blog" },
   { key: "contact", label: "Contact", path: "/contact" },
   { key: "campaign", label: "Campaign (landing page)", path: "/campaign" },
+  { key: "book", label: "Book a call", path: "/book" },
 ];
 
 /** Google truncates around these widths. Guidance, not validation. */

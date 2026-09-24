@@ -20,6 +20,13 @@ import {
   Search,
   Megaphone,
   Languages,
+  ContactRound,
+  SquareKanban,
+  Radar,
+  FilePen,
+  CalendarClock,
+  Bell,
+  SlidersHorizontal,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/store/auth";
@@ -42,6 +49,16 @@ const NAV: { group: string; items: { to: string; label: string; icon: React.Elem
     ],
   },
   {
+    group: "CRM",
+    items: [
+      { to: "/contacts", label: "Contacts", icon: ContactRound },
+      { to: "/pipeline", label: "Pipeline", icon: SquareKanban },
+      { to: "/visitors", label: "Visitors", icon: Radar },
+      { to: "/quotes", label: "Quotes", icon: FilePen },
+      { to: "/bookings", label: "Bookings", icon: CalendarClock },
+    ],
+  },
+  {
     group: "CONTENT",
     items: [
       { to: "/services", label: "Services", icon: Briefcase },
@@ -60,6 +77,8 @@ const NAV: { group: string; items: { to: string; label: string; icon: React.Elem
     items: [
       { to: "/seo", label: "SEO", icon: Search },
       { to: "/translations", label: "Translations", icon: Languages },
+      { to: "/notifications", label: "Alerts", icon: Bell },
+      { to: "/crm-settings", label: "CRM settings", icon: SlidersHorizontal },
       { to: "/marketing", label: "Marketing", icon: Megaphone },
       { to: "/media", label: "Media", icon: Images },
       { to: "/settings", label: "Site settings", icon: Settings },
@@ -150,7 +169,8 @@ export function AppSidebar({ open = false, onClose }: { open?: boolean; onClose?
               {section.group}
             </div>
             {section.items.map((item) => {
-              const active = pathname === item.to;
+              // A detail screen (/contacts/abc) keeps its section highlighted.
+              const active = pathname === item.to || (item.to !== "/" && pathname.startsWith(`${item.to}/`));
               const Icon = item.icon;
               return (
                 <Link

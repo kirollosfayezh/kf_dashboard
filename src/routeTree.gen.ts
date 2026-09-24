@@ -13,13 +13,17 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutSectionsRouteImport } from './routes/aboutSections'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as BlogPostsRouteImport } from './routes/blogPosts'
+import { Route as BookingsRouteImport } from './routes/bookings'
 import { Route as ChatRouteImport } from './routes/chat'
+import { Route as CrmSettingsRouteImport } from './routes/crm-settings'
 import { Route as FaqsRouteImport } from './routes/faqs'
 import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as LegalPagesRouteImport } from './routes/legalPages'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MarketingRouteImport } from './routes/marketing'
 import { Route as MediaRouteImport } from './routes/media'
+import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as PipelineRouteImport } from './routes/pipeline'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as PromosRouteImport } from './routes/promos'
 import { Route as SeoRouteImport } from './routes/seo'
@@ -28,6 +32,11 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SolutionsRouteImport } from './routes/solutions'
 import { Route as TestimonialsRouteImport } from './routes/testimonials'
 import { Route as TranslationsRouteImport } from './routes/translations'
+import { Route as VisitorsRouteImport } from './routes/visitors'
+import { Route as ContactsIndexRouteImport } from './routes/contacts.index'
+import { Route as ContactsIdRouteImport } from './routes/contacts.$id'
+import { Route as QuotesIndexRouteImport } from './routes/quotes.index'
+import { Route as QuotesIdRouteImport } from './routes/quotes.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -49,9 +58,19 @@ const BlogPostsRoute = BlogPostsRouteImport.update({
   path: '/blogPosts',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BookingsRoute = BookingsRouteImport.update({
+  id: '/bookings',
+  path: '/bookings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChatRoute = ChatRouteImport.update({
   id: '/chat',
   path: '/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CrmSettingsRoute = CrmSettingsRouteImport.update({
+  id: '/crm-settings',
+  path: '/crm-settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FaqsRoute = FaqsRouteImport.update({
@@ -82,6 +101,16 @@ const MarketingRoute = MarketingRouteImport.update({
 const MediaRoute = MediaRouteImport.update({
   id: '/media',
   path: '/media',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PipelineRoute = PipelineRouteImport.update({
+  id: '/pipeline',
+  path: '/pipeline',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProjectsRoute = ProjectsRouteImport.update({
@@ -124,19 +153,48 @@ const TranslationsRoute = TranslationsRouteImport.update({
   path: '/translations',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VisitorsRoute = VisitorsRouteImport.update({
+  id: '/visitors',
+  path: '/visitors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactsIndexRoute = ContactsIndexRouteImport.update({
+  id: '/contacts/',
+  path: '/contacts/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactsIdRoute = ContactsIdRouteImport.update({
+  id: '/contacts/$id',
+  path: '/contacts/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuotesIndexRoute = QuotesIndexRouteImport.update({
+  id: '/quotes/',
+  path: '/quotes/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuotesIdRoute = QuotesIdRouteImport.update({
+  id: '/quotes/$id',
+  path: '/quotes/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/aboutSections': typeof AboutSectionsRoute
   '/analytics': typeof AnalyticsRoute
   '/blogPosts': typeof BlogPostsRoute
+  '/bookings': typeof BookingsRoute
   '/chat': typeof ChatRoute
+  '/crm-settings': typeof CrmSettingsRoute
   '/faqs': typeof FaqsRoute
   '/inbox': typeof InboxRoute
   '/legalPages': typeof LegalPagesRoute
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
   '/media': typeof MediaRoute
+  '/notifications': typeof NotificationsRoute
+  '/pipeline': typeof PipelineRoute
   '/projects': typeof ProjectsRoute
   '/promos': typeof PromosRoute
   '/seo': typeof SeoRoute
@@ -145,19 +203,28 @@ export interface FileRoutesByFullPath {
   '/solutions': typeof SolutionsRoute
   '/testimonials': typeof TestimonialsRoute
   '/translations': typeof TranslationsRoute
+  '/visitors': typeof VisitorsRoute
+  '/contacts/$id': typeof ContactsIdRoute
+  '/quotes/$id': typeof QuotesIdRoute
+  '/contacts/': typeof ContactsIndexRoute
+  '/quotes/': typeof QuotesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/aboutSections': typeof AboutSectionsRoute
   '/analytics': typeof AnalyticsRoute
   '/blogPosts': typeof BlogPostsRoute
+  '/bookings': typeof BookingsRoute
   '/chat': typeof ChatRoute
+  '/crm-settings': typeof CrmSettingsRoute
   '/faqs': typeof FaqsRoute
   '/inbox': typeof InboxRoute
   '/legalPages': typeof LegalPagesRoute
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
   '/media': typeof MediaRoute
+  '/notifications': typeof NotificationsRoute
+  '/pipeline': typeof PipelineRoute
   '/projects': typeof ProjectsRoute
   '/promos': typeof PromosRoute
   '/seo': typeof SeoRoute
@@ -166,6 +233,11 @@ export interface FileRoutesByTo {
   '/solutions': typeof SolutionsRoute
   '/testimonials': typeof TestimonialsRoute
   '/translations': typeof TranslationsRoute
+  '/visitors': typeof VisitorsRoute
+  '/contacts/$id': typeof ContactsIdRoute
+  '/quotes/$id': typeof QuotesIdRoute
+  '/contacts': typeof ContactsIndexRoute
+  '/quotes': typeof QuotesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -173,13 +245,17 @@ export interface FileRoutesById {
   '/aboutSections': typeof AboutSectionsRoute
   '/analytics': typeof AnalyticsRoute
   '/blogPosts': typeof BlogPostsRoute
+  '/bookings': typeof BookingsRoute
   '/chat': typeof ChatRoute
+  '/crm-settings': typeof CrmSettingsRoute
   '/faqs': typeof FaqsRoute
   '/inbox': typeof InboxRoute
   '/legalPages': typeof LegalPagesRoute
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
   '/media': typeof MediaRoute
+  '/notifications': typeof NotificationsRoute
+  '/pipeline': typeof PipelineRoute
   '/projects': typeof ProjectsRoute
   '/promos': typeof PromosRoute
   '/seo': typeof SeoRoute
@@ -188,6 +264,11 @@ export interface FileRoutesById {
   '/solutions': typeof SolutionsRoute
   '/testimonials': typeof TestimonialsRoute
   '/translations': typeof TranslationsRoute
+  '/visitors': typeof VisitorsRoute
+  '/contacts/$id': typeof ContactsIdRoute
+  '/quotes/$id': typeof QuotesIdRoute
+  '/contacts/': typeof ContactsIndexRoute
+  '/quotes/': typeof QuotesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -196,13 +277,17 @@ export interface FileRouteTypes {
     | '/aboutSections'
     | '/analytics'
     | '/blogPosts'
+    | '/bookings'
     | '/chat'
+    | '/crm-settings'
     | '/faqs'
     | '/inbox'
     | '/legalPages'
     | '/login'
     | '/marketing'
     | '/media'
+    | '/notifications'
+    | '/pipeline'
     | '/projects'
     | '/promos'
     | '/seo'
@@ -211,19 +296,28 @@ export interface FileRouteTypes {
     | '/solutions'
     | '/testimonials'
     | '/translations'
+    | '/visitors'
+    | '/contacts/$id'
+    | '/quotes/$id'
+    | '/contacts/'
+    | '/quotes/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/aboutSections'
     | '/analytics'
     | '/blogPosts'
+    | '/bookings'
     | '/chat'
+    | '/crm-settings'
     | '/faqs'
     | '/inbox'
     | '/legalPages'
     | '/login'
     | '/marketing'
     | '/media'
+    | '/notifications'
+    | '/pipeline'
     | '/projects'
     | '/promos'
     | '/seo'
@@ -232,19 +326,28 @@ export interface FileRouteTypes {
     | '/solutions'
     | '/testimonials'
     | '/translations'
+    | '/visitors'
+    | '/contacts/$id'
+    | '/quotes/$id'
+    | '/contacts'
+    | '/quotes'
   id:
     | '__root__'
     | '/'
     | '/aboutSections'
     | '/analytics'
     | '/blogPosts'
+    | '/bookings'
     | '/chat'
+    | '/crm-settings'
     | '/faqs'
     | '/inbox'
     | '/legalPages'
     | '/login'
     | '/marketing'
     | '/media'
+    | '/notifications'
+    | '/pipeline'
     | '/projects'
     | '/promos'
     | '/seo'
@@ -253,6 +356,11 @@ export interface FileRouteTypes {
     | '/solutions'
     | '/testimonials'
     | '/translations'
+    | '/visitors'
+    | '/contacts/$id'
+    | '/quotes/$id'
+    | '/contacts/'
+    | '/quotes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -260,13 +368,17 @@ export interface RootRouteChildren {
   AboutSectionsRoute: typeof AboutSectionsRoute
   AnalyticsRoute: typeof AnalyticsRoute
   BlogPostsRoute: typeof BlogPostsRoute
+  BookingsRoute: typeof BookingsRoute
   ChatRoute: typeof ChatRoute
+  CrmSettingsRoute: typeof CrmSettingsRoute
   FaqsRoute: typeof FaqsRoute
   InboxRoute: typeof InboxRoute
   LegalPagesRoute: typeof LegalPagesRoute
   LoginRoute: typeof LoginRoute
   MarketingRoute: typeof MarketingRoute
   MediaRoute: typeof MediaRoute
+  NotificationsRoute: typeof NotificationsRoute
+  PipelineRoute: typeof PipelineRoute
   ProjectsRoute: typeof ProjectsRoute
   PromosRoute: typeof PromosRoute
   SeoRoute: typeof SeoRoute
@@ -275,6 +387,11 @@ export interface RootRouteChildren {
   SolutionsRoute: typeof SolutionsRoute
   TestimonialsRoute: typeof TestimonialsRoute
   TranslationsRoute: typeof TranslationsRoute
+  VisitorsRoute: typeof VisitorsRoute
+  ContactsIdRoute: typeof ContactsIdRoute
+  QuotesIdRoute: typeof QuotesIdRoute
+  ContactsIndexRoute: typeof ContactsIndexRoute
+  QuotesIndexRoute: typeof QuotesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -307,11 +424,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogPostsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bookings': {
+      id: '/bookings'
+      path: '/bookings'
+      fullPath: '/bookings'
+      preLoaderRoute: typeof BookingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/chat': {
       id: '/chat'
       path: '/chat'
       fullPath: '/chat'
       preLoaderRoute: typeof ChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/crm-settings': {
+      id: '/crm-settings'
+      path: '/crm-settings'
+      fullPath: '/crm-settings'
+      preLoaderRoute: typeof CrmSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/faqs': {
@@ -354,6 +485,20 @@ declare module '@tanstack/react-router' {
       path: '/media'
       fullPath: '/media'
       preLoaderRoute: typeof MediaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pipeline': {
+      id: '/pipeline'
+      path: '/pipeline'
+      fullPath: '/pipeline'
+      preLoaderRoute: typeof PipelineRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/projects': {
@@ -412,6 +557,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TranslationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/visitors': {
+      id: '/visitors'
+      path: '/visitors'
+      fullPath: '/visitors'
+      preLoaderRoute: typeof VisitorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contacts/': {
+      id: '/contacts/'
+      path: '/contacts'
+      fullPath: '/contacts/'
+      preLoaderRoute: typeof ContactsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contacts/$id': {
+      id: '/contacts/$id'
+      path: '/contacts/$id'
+      fullPath: '/contacts/$id'
+      preLoaderRoute: typeof ContactsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quotes/': {
+      id: '/quotes/'
+      path: '/quotes'
+      fullPath: '/quotes/'
+      preLoaderRoute: typeof QuotesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quotes/$id': {
+      id: '/quotes/$id'
+      path: '/quotes/$id'
+      fullPath: '/quotes/$id'
+      preLoaderRoute: typeof QuotesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -420,13 +600,17 @@ const rootRouteChildren: RootRouteChildren = {
   AboutSectionsRoute: AboutSectionsRoute,
   AnalyticsRoute: AnalyticsRoute,
   BlogPostsRoute: BlogPostsRoute,
+  BookingsRoute: BookingsRoute,
   ChatRoute: ChatRoute,
+  CrmSettingsRoute: CrmSettingsRoute,
   FaqsRoute: FaqsRoute,
   InboxRoute: InboxRoute,
   LegalPagesRoute: LegalPagesRoute,
   LoginRoute: LoginRoute,
   MarketingRoute: MarketingRoute,
   MediaRoute: MediaRoute,
+  NotificationsRoute: NotificationsRoute,
+  PipelineRoute: PipelineRoute,
   ProjectsRoute: ProjectsRoute,
   PromosRoute: PromosRoute,
   SeoRoute: SeoRoute,
@@ -435,6 +619,11 @@ const rootRouteChildren: RootRouteChildren = {
   SolutionsRoute: SolutionsRoute,
   TestimonialsRoute: TestimonialsRoute,
   TranslationsRoute: TranslationsRoute,
+  VisitorsRoute: VisitorsRoute,
+  ContactsIdRoute: ContactsIdRoute,
+  QuotesIdRoute: QuotesIdRoute,
+  ContactsIndexRoute: ContactsIndexRoute,
+  QuotesIndexRoute: QuotesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

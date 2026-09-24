@@ -2,6 +2,16 @@ import { ExternalLink, Menu, Moon, Sun } from "lucide-react";
 import { useRouterState } from "@tanstack/react-router";
 import { useTheme } from "@/store/theme";
 import { SCREEN_TITLES } from "@/components/app-sidebar";
+import { NotificationBell } from "@/components/notification-bell";
+
+/** Detail screens (/contacts/abc, /quotes/new) take their section's title. */
+function titleFor(pathname: string): string {
+  if (SCREEN_TITLES[pathname]) return SCREEN_TITLES[pathname];
+  if (pathname.startsWith("/contacts/")) return "Contact";
+  if (pathname.startsWith("/quotes/")) return "Quote";
+  const section = "/" + (pathname.split("/")[1] ?? "");
+  return SCREEN_TITLES[section] ?? "Dashboard";
+}
 
 /**
  * The mockup's sticky top bar, present at every breakpoint: a hamburger below
@@ -15,7 +25,7 @@ import { SCREEN_TITLES } from "@/components/app-sidebar";
 export function AppHeader({ onOpenNav }: { onOpenNav: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { theme, toggle } = useTheme();
-  const title = SCREEN_TITLES[pathname] ?? "Dashboard";
+  const title = titleFor(pathname);
 
   return (
     <header
@@ -39,6 +49,7 @@ export function AppHeader({ onOpenNav }: { onOpenNav: () => void }) {
       </div>
 
       <div className="flex shrink-0 items-center gap-[9px]">
+        <NotificationBell />
         <button
           type="button"
           onClick={toggle}
