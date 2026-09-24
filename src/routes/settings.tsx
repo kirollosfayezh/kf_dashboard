@@ -137,6 +137,18 @@ function SettingsPage() {
               onChange={(e) => setSettings({ ...settings, tagline: { ...settings.tagline, ar: e.target.value } })}
             />
           </Field>
+          <Field label="Tagline (DE)">
+            <Input
+              value={settings.tagline?.de ?? ""}
+              onChange={(e) => setSettings({ ...settings, tagline: { ...settings.tagline, de: e.target.value } })}
+            />
+          </Field>
+          <Field label="Tagline (FR)">
+            <Input
+              value={settings.tagline?.fr ?? ""}
+              onChange={(e) => setSettings({ ...settings, tagline: { ...settings.tagline, fr: e.target.value } })}
+            />
+          </Field>
           <div className="mb-2 text-caption font-semibold text-muted">
             Logo
           </div>

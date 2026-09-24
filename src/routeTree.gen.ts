@@ -27,6 +27,7 @@ import { Route as ServicesRouteImport } from './routes/services'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SolutionsRouteImport } from './routes/solutions'
 import { Route as TestimonialsRouteImport } from './routes/testimonials'
+import { Route as TranslationsRouteImport } from './routes/translations'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -118,6 +119,11 @@ const TestimonialsRoute = TestimonialsRouteImport.update({
   path: '/testimonials',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TranslationsRoute = TranslationsRouteImport.update({
+  id: '/translations',
+  path: '/translations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/solutions': typeof SolutionsRoute
   '/testimonials': typeof TestimonialsRoute
+  '/translations': typeof TranslationsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -158,6 +165,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/solutions': typeof SolutionsRoute
   '/testimonials': typeof TestimonialsRoute
+  '/translations': typeof TranslationsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -179,6 +187,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/solutions': typeof SolutionsRoute
   '/testimonials': typeof TestimonialsRoute
+  '/translations': typeof TranslationsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -201,6 +210,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/solutions'
     | '/testimonials'
+    | '/translations'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -221,6 +231,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/solutions'
     | '/testimonials'
+    | '/translations'
   id:
     | '__root__'
     | '/'
@@ -241,6 +252,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/solutions'
     | '/testimonials'
+    | '/translations'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -262,6 +274,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   SolutionsRoute: typeof SolutionsRoute
   TestimonialsRoute: typeof TestimonialsRoute
+  TranslationsRoute: typeof TranslationsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -392,6 +405,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TestimonialsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/translations': {
+      id: '/translations'
+      path: '/translations'
+      fullPath: '/translations'
+      preLoaderRoute: typeof TranslationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -414,6 +434,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   SolutionsRoute: SolutionsRoute,
   TestimonialsRoute: TestimonialsRoute,
+  TranslationsRoute: TranslationsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
