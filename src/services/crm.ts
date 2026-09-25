@@ -248,6 +248,8 @@ export interface CrmSettings {
     daysAhead: number;
     timezone: string;
     blockedDates: string[];
+    /** Hours for one specific date ("YYYY-MM-DD"); empty windows = closed. */
+    dateOverrides?: Record<string, { windows: TimeWindow[] }>;
     enabled: boolean;
   };
   quotes: {
