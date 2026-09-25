@@ -22,6 +22,7 @@ import { Route as LegalPagesRouteImport } from './routes/legalPages'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MarketingRouteImport } from './routes/marketing'
 import { Route as MediaRouteImport } from './routes/media'
+import { Route as NewsletterRouteImport } from './routes/newsletter'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as PipelineRouteImport } from './routes/pipeline'
 import { Route as ProjectsRouteImport } from './routes/projects'
@@ -101,6 +102,11 @@ const MarketingRoute = MarketingRouteImport.update({
 const MediaRoute = MediaRouteImport.update({
   id: '/media',
   path: '/media',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsletterRoute = NewsletterRouteImport.update({
+  id: '/newsletter',
+  path: '/newsletter',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotificationsRoute = NotificationsRouteImport.update({
@@ -193,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
   '/media': typeof MediaRoute
+  '/newsletter': typeof NewsletterRoute
   '/notifications': typeof NotificationsRoute
   '/pipeline': typeof PipelineRoute
   '/projects': typeof ProjectsRoute
@@ -223,6 +230,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
   '/media': typeof MediaRoute
+  '/newsletter': typeof NewsletterRoute
   '/notifications': typeof NotificationsRoute
   '/pipeline': typeof PipelineRoute
   '/projects': typeof ProjectsRoute
@@ -254,6 +262,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
   '/media': typeof MediaRoute
+  '/newsletter': typeof NewsletterRoute
   '/notifications': typeof NotificationsRoute
   '/pipeline': typeof PipelineRoute
   '/projects': typeof ProjectsRoute
@@ -286,6 +295,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/marketing'
     | '/media'
+    | '/newsletter'
     | '/notifications'
     | '/pipeline'
     | '/projects'
@@ -316,6 +326,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/marketing'
     | '/media'
+    | '/newsletter'
     | '/notifications'
     | '/pipeline'
     | '/projects'
@@ -346,6 +357,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/marketing'
     | '/media'
+    | '/newsletter'
     | '/notifications'
     | '/pipeline'
     | '/projects'
@@ -377,6 +389,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MarketingRoute: typeof MarketingRoute
   MediaRoute: typeof MediaRoute
+  NewsletterRoute: typeof NewsletterRoute
   NotificationsRoute: typeof NotificationsRoute
   PipelineRoute: typeof PipelineRoute
   ProjectsRoute: typeof ProjectsRoute
@@ -485,6 +498,13 @@ declare module '@tanstack/react-router' {
       path: '/media'
       fullPath: '/media'
       preLoaderRoute: typeof MediaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/newsletter': {
+      id: '/newsletter'
+      path: '/newsletter'
+      fullPath: '/newsletter'
+      preLoaderRoute: typeof NewsletterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/notifications': {
@@ -609,6 +629,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MarketingRoute: MarketingRoute,
   MediaRoute: MediaRoute,
+  NewsletterRoute: NewsletterRoute,
   NotificationsRoute: NotificationsRoute,
   PipelineRoute: PipelineRoute,
   ProjectsRoute: ProjectsRoute,

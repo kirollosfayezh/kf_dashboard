@@ -57,7 +57,11 @@ const readTranslated = (v: Partial<Record<LangCode, string>> | undefined): Trans
 });
 
 /** The `meta` keys this form exposes as their own inputs, beyond tag/result/points. */
-const META_TEXT_FIELDS = ["demoUrl", "repoUrl", "client", "year", "duration", "badge", "ctaLabel", "ctaUrl", "startsAt", "endsAt", "delaySeconds"] as const;
+const META_TEXT_FIELDS = [
+  "demoUrl", "repoUrl", "client", "year", "duration",
+  "badge", "ctaLabel", "ctaUrl", "startsAt", "endsAt", "delaySeconds",
+  "authorRole", "company", "rating", "sourceUrl",
+] as const;
 type MetaTextField = (typeof META_TEXT_FIELDS)[number];
 
 interface FormState {
@@ -112,8 +116,12 @@ function toForm(item: ContentItem): FormState {
     points: Array.isArray(item.meta?.points)
       ? (item.meta.points as unknown[]).filter((x): x is string => typeof x === "string").join("\n")
       : "",
+    // `rating` is stored as a number; everything else as text.
     links: Object.fromEntries(
-      META_TEXT_FIELDS.map((k) => [k, typeof item.meta?.[k] === "string" ? (item.meta[k] as string) : ""]),
+      META_TEXT_FIELDS.map((k) => {
+        const v = item.meta?.[k];
+        return [k, typeof v === "string" ? v : typeof v === "number" ? String(v) : ""];
+      }),
     ) as Record<MetaTextField, string>,
   };
 }
@@ -145,6 +153,16 @@ function toPayload(form: FormState) {
     if (v) meta[k] = v;
     else delete meta[k];
   }
+  // A star rating is a number 1–5 on the site, not the "5" the input gives us.
+  if (typeof meta.rating === "string") {
+    const n = Math.round(Number(meta.rating));
+    if (Number.isFinite(n) && n >= 1 && n <= 5) meta.rating = n;
+    else delete meta.rating;
+  }
+  // A placeholder project carries `sample: true`; a real one carries no key at
+  // all, so the site's "is this a sample?" check is a plain `=== true`.
+  if (form.meta.sample === true) meta.sample = true;
+  else delete meta.sample;
 
   return {
     slug: form.slug.trim(),
@@ -634,6 +652,63 @@ export function ContentCrudScreen({
               </>
             ) : null}
 
+            {/* Testimonials only: who said it and where it can be checked. */}
+            {collection === "testimonials" ? (
+              <>
+                <div
+                  className="mb-2 mt-1 border-t pt-4 text-caption font-semibold text-muted"
+                  style={{ borderColor: "var(--border)" }}
+                >
+                  Client details
+                </div>
+                <div
+                  className="grid gap-x-5"
+                  style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 240px), 1fr))" }}
+                >
+                  <Field label="Role" hint="Their job title, e.g. Operations Manager.">
+                    <Input
+                      value={form.links.authorRole}
+                      onChange={(e) => setLink("authorRole", e.target.value)}
+                      placeholder="Operations Manager"
+                    />
+                  </Field>
+                  <Field label="Company" hint="Shown after the role.">
+                    <Input
+                      value={form.links.company}
+                      onChange={(e) => setLink("company", e.target.value)}
+                      placeholder="Cairo Bistro Group"
+                    />
+                  </Field>
+                  <Field label="Rating" hint="1–5, shown as stars. Leave blank for none.">
+                    <Input
+                      type="number"
+                      min={1}
+                      max={5}
+                      step={1}
+                      inputMode="numeric"
+                      value={form.links.rating}
+                      onChange={(e) => setLink("rating", e.target.value)}
+                      placeholder="5"
+                    />
+                  </Field>
+                  <Field label="Source link" hint="The LinkedIn post or Google review this came from — shown as 'View review'.">
+                    <Input
+                      type="url"
+                      inputMode="url"
+                      value={form.links.sourceUrl}
+                      onChange={(e) => setLink("sourceUrl", e.target.value)}
+                      placeholder="https://www.linkedin.com/posts/…"
+                    />
+                  </Field>
+                </div>
+                <div className="mb-4 rounded-control border border-line bg-raised px-3.5 py-3 text-caption text-faint">
+                  Title = the client's name. Summary = the quote (one or two sentences, translated per
+                  language). Photo = their portrait. Rows seeded earlier keep "Role, Company" in the Tag
+                  field until you fill these in.
+                </div>
+              </>
+            ) : null}
+
             {collection === "projects" ? (
               <>
                 <div
@@ -685,6 +760,25 @@ export function ContentCrudScreen({
                       placeholder="e.g. 10 weeks"
                     />
                   </Field>
+                </div>
+                {/* The six seeded placeholders carry this flag so the site can
+                    label them; a delivered project must never be tagged. */}
+                <div className="mb-4 flex items-center justify-between gap-4 rounded-control border border-line px-3.5 py-3">
+                  <div>
+                    <div className="text-ui font-semibold">Illustrative sample (not a delivered project)</div>
+                    <div className="mt-0.5 text-caption text-faint">
+                      {form.meta.sample === true
+                        ? "Labelled “Illustrative example” on the site. Switch off once real screenshots are in."
+                        : "Shown as real, delivered work."}
+                    </div>
+                  </div>
+                  <Toggle
+                    checked={form.meta.sample === true}
+                    onChange={() =>
+                      setForm({ ...form, meta: { ...form.meta, sample: form.meta.sample !== true } })
+                    }
+                    label="Illustrative sample (not a delivered project)"
+                  />
                 </div>
                 <div
                   className="mb-4 rounded-control border px-[14px] py-3 text-caption border-line bg-raised text-faint"

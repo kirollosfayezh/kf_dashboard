@@ -73,10 +73,25 @@ export interface TrackingSettings {
   metaPixelId?: string;
   tiktokPixelId?: string;
   snapchatPixelId?: string;
+  linkedinPartnerId?: string;
+  linkedinConversionId?: string;
+  clarityId?: string;
   events?: Record<string, boolean>;
   respectDnt?: boolean;
   consentMode?: boolean;
   debug?: boolean;
+}
+
+/** Public profile URLs shown in the site footer and its structured data. `x` is
+ *  stored as an `@handle`; the server normalises whatever is typed. */
+export interface SocialLinks {
+  facebook?: string;
+  instagram?: string;
+  linkedin?: string;
+  x?: string;
+  github?: string;
+  youtube?: string;
+  tiktok?: string;
 }
 
 export interface SiteSettings extends Record<string, unknown> {
@@ -89,6 +104,28 @@ export interface SiteSettings extends Record<string, unknown> {
   seo: { defaultTitle: string; defaultDescription: string };
   pixels: TrackingSettings;
   contact: { email?: string; phone?: string; whatsapp?: string };
+  social?: SocialLinks;
+  updatedAt: string;
+}
+
+/** The site actions the marketing pixels report as conversions; also the
+ *  `label` of a `"conversion"` journey event. */
+export type ConversionKind = "lead" | "booking" | "chat_start" | "quote_accepted" | "newsletter";
+
+export type SubscriberSource = "footer" | "article" | "popup";
+
+/** A newsletter signup from the public site. Stored only — nothing is sent yet. */
+export interface Subscriber extends Record<string, unknown> {
+  id: string;
+  email: string;
+  lang?: string;
+  source: SubscriberSource;
+  visitorId?: string;
+  /** The CRM contact this signup was filed under, when the email matched one. */
+  contactId?: string;
+  consentAt: string;
+  unsubscribedAt?: string;
+  createdAt: string;
   updatedAt: string;
 }
 

@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check, ExternalLink, FileText, Info, RotateCcw, Search } from "lucide-react";
 import { api } from "@/services/http";
 import type { ContentItem } from "@/services/domain-types";
+import { CMS_LANGS } from "@/components/content-crud/ContentCrudScreen";
 import {
   Button,
   Callout,
@@ -18,10 +19,18 @@ import {
 
 export const Route = createFileRoute("/seo")({ component: SeoPage });
 
+type LangCode = (typeof CMS_LANGS)[number]["code"];
+type Translated = Record<LangCode, string>;
+
+/**
+ * A row of `/admin/seo`. `title` and `description` are per language; the API
+ * normalises legacy rows on read, but a plain string is still accepted here and
+ * treated as English so an older backend cannot blank the screen.
+ */
 interface SeoOverride {
   key: string;
-  title?: string;
-  description?: string;
+  title?: Partial<Translated> | string;
+  description?: Partial<Translated> | string;
   keywords?: string;
   image?: string;
   noindex?: boolean | null;
@@ -29,7 +38,7 @@ interface SeoOverride {
 }
 
 /**
- * The eight entries the site's own `PAGES` table defines. The backend rejects
+ * The nine entries the site's own `PAGES` table defines. The backend rejects
  * any other key, so this list and `KEYS` in
  * `kf_backend/src/shared/services/seo.service.ts` must stay in step.
  *
@@ -69,6 +78,43 @@ interface Entry {
   derivedDesc?: string;
 }
 
+interface Draft {
+  title: Translated;
+  description: Translated;
+  keywords: string;
+  image: string;
+  noindex: boolean | null;
+}
+
+const emptyTranslated = (): Translated => ({ en: "", ar: "", de: "", fr: "" });
+
+const blankDraft = (): Draft => ({
+  title: emptyTranslated(),
+  description: emptyTranslated(),
+  keywords: "",
+  image: "",
+  noindex: null,
+});
+
+/** A legacy string is English; missing languages read as blank. */
+const readTranslated = (v: Partial<Translated> | string | undefined): Translated => {
+  if (typeof v === "string") return { ...emptyTranslated(), en: v };
+  return { en: v?.en ?? "", ar: v?.ar ?? "", de: v?.de ?? "", fr: v?.fr ?? "" };
+};
+
+const fromRow = (r: SeoOverride | undefined): Draft => ({
+  title: readTranslated(r?.title),
+  description: readTranslated(r?.description),
+  keywords: r?.keywords ?? "",
+  image: r?.image ?? "",
+  noindex: typeof r?.noindex === "boolean" ? r.noindex : null,
+});
+
+const hasText = (t: Translated) => CMS_LANGS.some((l) => t[l.code].trim().length > 0);
+
+/** The site's own fallback: this language's text, else the English override. */
+const shownIn = (t: Translated, lang: LangCode) => t[lang].trim() || t.en.trim();
+
 function Counter({ value, limit }: { value: string; limit: number }) {
   const n = value.trim().length;
   return (
@@ -87,12 +133,14 @@ function SerpPreview({
   path,
   title,
   description,
+  dir,
   fallbackNote,
 }: {
   origin: string;
   path: string;
   title: string;
   description: string;
+  dir?: "ltr" | "rtl";
   fallbackNote?: string;
 }) {
   const shown = (s: string, limit: number) => (s.length > limit ? `${s.slice(0, limit - 1)}…` : s);
@@ -105,17 +153,15 @@ function SerpPreview({
         Search preview
       </div>
       <div className="font-mono text-caption text-muted">{url}</div>
-      <div className="mt-0.5 text-[16px] leading-[1.3] text-info">
-        {shown(title, TITLE_LIMIT) || <span className="text-faint">{placeholder}</span>}
+      <div className="mt-0.5 text-[16px] leading-[1.3] text-info" dir={dir}>
+        {shown(title, TITLE_LIMIT) || <span className="text-faint" dir="ltr">{placeholder}</span>}
       </div>
-      <div className="mt-1 text-caption text-muted">
-        {shown(description, DESC_LIMIT) || <span className="text-faint">{placeholder}</span>}
+      <div className="mt-1 text-caption text-muted" dir={dir}>
+        {shown(description, DESC_LIMIT) || <span className="text-faint" dir="ltr">{placeholder}</span>}
       </div>
     </div>
   );
 }
-
-const BLANK = { title: "", description: "", keywords: "", image: "", noindex: null as boolean | null };
 
 function SeoPage() {
   const [rows, setRows] = useState<SeoOverride[] | null>(null);
@@ -124,10 +170,13 @@ function SeoPage() {
   const [error, setError] = useState<string | null>(null);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [savedKey, setSavedKey] = useState<string | null>(null);
-  const [draft, setDraft] = useState<Record<string, typeof BLANK>>({});
+  const [draft, setDraft] = useState<Record<string, Draft>>({});
   const [group, setGroup] = useState<Group>("pages");
   const [selected, setSelected] = useState<string>("home");
   const [query, setQuery] = useState("");
+  // Kept across pages on purpose: a translator working through every page in
+  // Arabic should not be bounced back to English on each click.
+  const [activeLang, setActiveLang] = useState<LangCode>("en");
 
   const origin = import.meta.env.VITE_SITE_URL?.trim() || "https://your-site.com";
 
@@ -135,7 +184,7 @@ function SeoPage() {
     (async () => {
       try {
         // Articles and case studies are listed so this screen shows every
-        // indexable URL, not just the eight the override table covers.
+        // indexable URL, not just the nine the override table covers.
         const [data, posts, projs] = await Promise.all([
           api.get<SeoOverride[]>("/admin/seo"),
           api.get<ContentItem[]>("/admin/content/blogPosts").catch(() => []),
@@ -144,17 +193,8 @@ function SeoPage() {
         setRows(data);
         setArticles(posts);
         setProjects(projs);
-        const next: Record<string, typeof BLANK> = {};
-        for (const p of PAGES) {
-          const r = data.find((x) => x.key === p.key);
-          next[p.key] = {
-            title: r?.title ?? "",
-            description: r?.description ?? "",
-            keywords: r?.keywords ?? "",
-            image: r?.image ?? "",
-            noindex: typeof r?.noindex === "boolean" ? r.noindex : null,
-          };
-        }
+        const next: Record<string, Draft> = {};
+        for (const p of PAGES) next[p.key] = fromRow(data.find((x) => x.key === p.key));
         setDraft(next);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to load SEO settings");
@@ -201,15 +241,20 @@ function SeoPage() {
     [rows],
   );
 
-  const field = (key: string, name: keyof typeof BLANK, value: string | boolean | null) =>
+  const setText = (key: string, name: "title" | "description", lang: LangCode, value: string) =>
+    setDraft((d) => ({ ...d, [key]: { ...d[key], [name]: { ...d[key][name], [lang]: value } } }));
+
+  const setField = (key: string, name: "keywords" | "image" | "noindex", value: string | boolean | null) =>
     setDraft((d) => ({ ...d, [key]: { ...d[key], [name]: value } }));
 
+  /** Sends the whole draft: a blank language clears that language on the server. */
   const save = async (key: string) => {
     setSavingKey(key);
     setError(null);
     try {
       const updated = await api.patch<SeoOverride>(`/admin/seo/${key}`, draft[key]);
       setRows((prev) => [...(prev ?? []).filter((r) => r.key !== key), updated]);
+      setDraft((d) => ({ ...d, [key]: fromRow(updated) }));
       setSavedKey(key);
       window.setTimeout(() => setSavedKey((k) => (k === key ? null : k)), 2400);
     } catch (e) {
@@ -229,10 +274,11 @@ function SeoPage() {
     );
   }
 
-  const d = current?.overridable ? (draft[current.id] ?? BLANK) : BLANK;
+  const d = current?.overridable ? (draft[current.id] ?? blankDraft()) : blankDraft();
   const overridden =
     current?.overridable &&
-    (!!d.title || !!d.description || !!d.keywords || !!d.image || typeof d.noindex === "boolean");
+    (hasText(d.title) || hasText(d.description) || !!d.keywords || !!d.image || typeof d.noindex === "boolean");
+  const lang = CMS_LANGS.find((l) => l.code === activeLang) ?? CMS_LANGS[0];
 
   const counts = {
     pages: PAGES.length,
@@ -244,7 +290,7 @@ function SeoPage() {
     <div className="kf-scr">
       <PageHeader
         title="SEO"
-        subtitle="What each page tells Google and the AI assistants. Pick a page on the left; leave a field blank to use the site's built-in default."
+        subtitle="What each page tells Google and the AI assistants, in every language the site speaks. Pick a page on the left; leave a field blank to use the site's built-in default."
       />
 
       {error ? <Callout tone="danger" className="mb-4">{error}</Callout> : null}
@@ -333,8 +379,8 @@ function SeoPage() {
                     <Button
                       size="sm"
                       icon={<RotateCcw size={13} />}
-                      onClick={() => setDraft((x) => ({ ...x, [current.id]: { ...BLANK } }))}
-                      title="Clear every field so this page falls back to the site's built-in values"
+                      onClick={() => setDraft((x) => ({ ...x, [current.id]: blankDraft() }))}
+                      title="Clear every field, in every language, so this page falls back to the site's built-in values"
                     >
                       Reset
                     </Button>
@@ -344,44 +390,98 @@ function SeoPage() {
 
               <div className="grid gap-x-5 lg:grid-cols-2">
                 <div className="min-w-0">
-                  <Field label="Title" hint="The clickable headline in search results and on the browser tab.">
-                    <Input
-                      value={d.title}
-                      onChange={(e) => field(current.id, "title", e.target.value)}
-                      placeholder="Leave blank to use the site default"
-                    />
-                    <div className="mt-1.5 text-right">
-                      <Counter value={d.title} limit={TITLE_LIMIT} />
-                    </div>
-                  </Field>
+                  {/*
+                    One tab per language, as on the content editor. The dot says
+                    whether that language has its own title, so an untranslated
+                    page is visible without opening every tab.
+                  */}
+                  <div
+                    className="mb-3 flex overflow-hidden rounded-control border border-line"
+                    role="tablist"
+                    aria-label="Override language"
+                  >
+                    {CMS_LANGS.map((l) => (
+                      <button
+                        key={l.code}
+                        type="button"
+                        role="tab"
+                        aria-selected={activeLang === l.code}
+                        onClick={() => setActiveLang(l.code)}
+                        className="flex flex-1 items-center justify-center gap-1.5 px-2 py-2 text-caption font-semibold"
+                        style={{
+                          background: activeLang === l.code ? "rgba(255,106,0,.12)" : "transparent",
+                          color: activeLang === l.code ? "var(--text)" : "var(--text2)",
+                        }}
+                      >
+                        {l.label}
+                        <span
+                          aria-hidden="true"
+                          title={d.title[l.code].trim() ? "Has its own title" : "Empty"}
+                          className="h-[6px] w-[6px] shrink-0 rounded-full"
+                          style={{
+                            background: d.title[l.code].trim() ? "#4ADE80" : "var(--bstrong)",
+                          }}
+                        />
+                      </button>
+                    ))}
+                  </div>
 
-                  <Field label="Meta description" hint="The grey summary under the headline.">
-                    <Textarea
-                      rows={3}
-                      value={d.description}
-                      onChange={(e) => field(current.id, "description", e.target.value)}
-                      placeholder="Leave blank to use the site default"
-                    />
-                    <div className="mt-1.5 text-right">
-                      <Counter value={d.description} limit={DESC_LIMIT} />
-                    </div>
-                  </Field>
+                  <div key={lang.code}>
+                    <Field
+                      label="Title"
+                      hint={
+                        lang.code === "en"
+                          ? "The clickable headline in search results and on the browser tab. Leave blank to use the site default."
+                          : `Leave blank to show the English text to ${lang.label} readers.`
+                      }
+                    >
+                      <Input
+                        dir={lang.dir}
+                        value={d.title[lang.code]}
+                        onChange={(e) => setText(current.id, "title", lang.code, e.target.value)}
+                        placeholder={lang.code === "en" ? "Leave blank to use the site default" : d.title.en || undefined}
+                      />
+                      <div className="mt-1.5 text-right">
+                        <Counter value={d.title[lang.code]} limit={TITLE_LIMIT} />
+                      </div>
+                    </Field>
+
+                    <Field
+                      label="Meta description"
+                      hint={
+                        lang.code === "en"
+                          ? "The grey summary under the headline. Leave blank to use the site default."
+                          : `Leave blank to show the English text to ${lang.label} readers.`
+                      }
+                    >
+                      <Textarea
+                        rows={3}
+                        dir={lang.dir}
+                        value={d.description[lang.code]}
+                        onChange={(e) => setText(current.id, "description", lang.code, e.target.value)}
+                        placeholder={lang.code === "en" ? "Leave blank to use the site default" : d.description.en || undefined}
+                      />
+                      <div className="mt-1.5 text-right">
+                        <Counter value={d.description[lang.code]} limit={DESC_LIMIT} />
+                      </div>
+                    </Field>
+                  </div>
 
                   <Field
                     label="Keywords"
-                    hint="Comma separated. Google ignores these; they stay for other engines and your own reference."
+                    hint="Comma separated, all languages. Google ignores these; they stay for other engines and your own reference."
                   >
                     <Input
                       value={d.keywords}
-                      onChange={(e) => field(current.id, "keywords", e.target.value)}
+                      onChange={(e) => setField(current.id, "keywords", e.target.value)}
                       placeholder="Leave blank to use the site default"
                     />
                   </Field>
 
-                  <Field label="Share image URL" hint="1200×630 works everywhere, for social and chat previews.">
+                  <Field label="Share image URL" hint="1200×630 works everywhere, for social and chat previews. Shared by every language.">
                     <Input
                       value={d.image}
-                      onChange={(e) => field(current.id, "image", e.target.value)}
+                      onChange={(e) => setField(current.id, "image", e.target.value)}
                       placeholder="Leave blank to use the site default"
                     />
                   </Field>
@@ -399,14 +499,20 @@ function SeoPage() {
                     </div>
                     <Toggle
                       checked={d.noindex === true}
-                      onChange={() => field(current.id, "noindex", d.noindex !== true)}
+                      onChange={() => setField(current.id, "noindex", d.noindex !== true)}
                       label={`Hide ${current.label} from search engines`}
                     />
                   </div>
                 </div>
 
                 <div className="min-w-0">
-                  <SerpPreview origin={origin} path={current.path} title={d.title} description={d.description} />
+                  <SerpPreview
+                    origin={origin}
+                    path={lang.code === "en" ? current.path : `/${lang.code}${current.path === "/" ? "" : current.path}`}
+                    title={shownIn(d.title, lang.code)}
+                    description={shownIn(d.description, lang.code)}
+                    dir={lang.dir}
+                  />
                   {d.image ? (
                     <div className="mt-4">
                       <div className="mb-1.5 text-caption font-semibold text-muted">Share image</div>

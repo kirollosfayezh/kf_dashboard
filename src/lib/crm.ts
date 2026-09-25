@@ -82,7 +82,17 @@ export const SOURCE_LABEL: Record<string, string> = {
   campaign: "Campaign form",
   booking: "Booking",
   quote: "Quote",
+  newsletter: "Newsletter",
   manual: "Added manually",
+};
+
+/** A `conversion` journey event's label, as the action it stands for. */
+export const CONVERSION_LABEL: Record<string, string> = {
+  lead: "enquiry sent",
+  booking: "call booked",
+  chat_start: "chat started",
+  quote_accepted: "quote accepted",
+  newsletter: "newsletter signup",
 };
 
 export function contactName(c: { name?: string; phones?: string[]; emails?: string[] }): string {

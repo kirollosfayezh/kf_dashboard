@@ -28,6 +28,7 @@ import {
 } from "@/services/crm";
 import {
   CHANNEL_LABEL,
+  CONVERSION_LABEL,
   SOURCE_LABEL,
   STAGE_META,
   ago,
@@ -57,6 +58,7 @@ const ACTIVITY_ICON: Record<string, React.ReactNode> = {
   note: <StickyNote size={14} />,
   stage_change: <MousePointerClick size={14} />,
   contact_created: <Globe size={14} />,
+  newsletter: <Mail size={14} />,
 };
 
 /** A `datetime-local` value for an ISO date, in the browser's zone. */
@@ -313,6 +315,8 @@ function Journey({ data }: { data: ContactDetail }) {
                 <span className="font-mono w-[44px] shrink-0 text-faint">{new Date(e.ts).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" })}</span>
                 {e.type === "pageview" ? (
                   <span className="font-mono truncate">{e.path}</span>
+                ) : e.type === "conversion" ? (
+                  <span className="truncate text-success">converted: <b>{CONVERSION_LABEL[e.label ?? ""] ?? e.label}</b> on {e.path}</span>
                 ) : (
                   <span className="truncate text-muted">clicked <b>{e.label}</b> on {e.path}</span>
                 )}

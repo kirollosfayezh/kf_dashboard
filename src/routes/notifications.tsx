@@ -17,6 +17,7 @@ const EVENTS: { key: string; label: string }[] = [
   { key: "quote_viewed", label: "Client opened a quote" },
   { key: "quote_accepted", label: "Quote accepted" },
   { key: "quote_declined", label: "Quote declined" },
+  { key: "newsletter", label: "Newsletter signup" },
   { key: "followup_due", label: "Follow-up due" },
 ];
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { api } from "@/services/http";
-import type { SiteSettings } from "@/services/domain-types";
+import type { SiteSettings, SocialLinks } from "@/services/domain-types";
 import {
   Button,
   Card,
@@ -22,6 +22,18 @@ export const Route = createFileRoute("/settings")({
 const KNOWN_LANGUAGES = ["en", "ar", "de", "fr"];
 // All four ship full translations now (ported from the design export).
 const REAL_LANGUAGES = new Set(["en", "ar", "de", "fr"]);
+
+/** In the order the footer shows them. X takes a handle, not a URL — the
+ *  server strips a leading @ or a pasted x.com link and stores `@handle`. */
+const SOCIAL_FIELDS: { key: keyof SocialLinks; label: string; placeholder: string; hint?: string }[] = [
+  { key: "facebook", label: "Facebook", placeholder: "https://www.facebook.com/yourpage" },
+  { key: "instagram", label: "Instagram", placeholder: "https://www.instagram.com/yourprofile" },
+  { key: "linkedin", label: "LinkedIn", placeholder: "https://www.linkedin.com/company/yourcompany", hint: "Use the company page rather than a personal profile." },
+  { key: "x", label: "X", placeholder: "@kftech", hint: "The handle, like @kftech — not the full link." },
+  { key: "github", label: "GitHub", placeholder: "https://github.com/yourorg" },
+  { key: "youtube", label: "YouTube", placeholder: "https://www.youtube.com/@yourchannel" },
+  { key: "tiktok", label: "TikTok", placeholder: "https://www.tiktok.com/@yourprofile" },
+];
 
 function SettingsPage() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
@@ -240,7 +252,7 @@ function SettingsPage() {
         <Card>
           <PanelHead
             title="Analytics & ad tags"
-            subtitle="Tag Manager, Analytics 4, Google Ads, Meta, TikTok and Snapchat now live on their own screen, with format checks and setup guidance."
+            subtitle="Tag Manager, Analytics 4, Google Ads, Meta, TikTok, Snapchat, LinkedIn and Clarity live on their own screen, with format checks and setup guidance."
           />
           <Link to="/marketing">
             <Button>Open Marketing</Button>
@@ -255,18 +267,47 @@ function SettingsPage() {
               onChange={(e) => setSettings({ ...settings, contact: { ...settings.contact, email: e.target.value } })}
             />
           </Field>
-          <Field label="Phone">
+          <Field label="Phone" hint="Shown on the contact page, e.g. +20 150 009 9671">
             <Input
+              type="tel"
+              dir="ltr"
               value={settings.contact?.phone ?? ""}
               onChange={(e) => setSettings({ ...settings, contact: { ...settings.contact, phone: e.target.value } })}
+              placeholder="+20 150 009 9671"
             />
           </Field>
-          <Field label="WhatsApp">
+          <Field label="WhatsApp" hint="Digits with country code, no + or spaces, e.g. 201500099671">
             <Input
+              inputMode="numeric"
+              dir="ltr"
               value={settings.contact?.whatsapp ?? ""}
               onChange={(e) => setSettings({ ...settings, contact: { ...settings.contact, whatsapp: e.target.value } })}
+              placeholder="201500099671"
             />
           </Field>
+        </Card>
+
+        {/* The site used to hardcode these in its footer, so the only way to
+            change a profile link was a redeploy. Blank hides the icon. */}
+        <Card>
+          <PanelHead
+            title="Social profiles"
+            subtitle="Shown in the footer and in the site's structured data. Leave a field blank to hide that network."
+          />
+          {SOCIAL_FIELDS.map((f) => (
+            <Field key={f.key} label={f.label} hint={f.hint}>
+              <Input
+                type={f.key === "x" ? "text" : "url"}
+                inputMode={f.key === "x" ? undefined : "url"}
+                dir="ltr"
+                spellCheck={false}
+                autoComplete="off"
+                value={settings.social?.[f.key] ?? ""}
+                onChange={(e) => setSettings({ ...settings, social: { ...settings.social, [f.key]: e.target.value } })}
+                placeholder={f.placeholder}
+              />
+            </Field>
+          ))}
         </Card>
 
         </div>

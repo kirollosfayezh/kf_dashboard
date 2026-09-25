@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Download, Radio, Search, ShieldCheck, UserRound } from "lucide-react";
 import { crm, type ConsentRecord, type JourneyEvent, type Visitor } from "@/services/crm";
-import { CHANNEL_LABEL, ago, countryName, dateTime, downloadCsv, flagOf } from "@/lib/crm";
+import { CHANNEL_LABEL, CONVERSION_LABEL, ago, countryName, dateTime, downloadCsv, flagOf } from "@/lib/crm";
 import { Callout, Card, DataTable, Drawer, EmptyState, Input, LoadingState, PageHeader, Pill, SegmentedControl, Select, StatTile } from "@/components/ui";
 
 export const Route = createFileRoute("/visitors")({ component: VisitorsPage });
@@ -223,7 +223,13 @@ function JourneyList({ events }: { events: JourneyEvent[] }) {
       {events.map((e, i) => (
         <li key={i} className="flex gap-2 text-caption">
           <span className="font-mono w-[92px] shrink-0 text-faint">{dateTime(e.ts)}</span>
-          {e.type === "pageview" ? <span className="font-mono truncate">{e.path}</span> : <span className="truncate text-muted">clicked <b>{e.label}</b></span>}
+          {e.type === "pageview" ? (
+            <span className="font-mono truncate">{e.path}</span>
+          ) : e.type === "conversion" ? (
+            <span className="truncate text-success">converted: <b>{CONVERSION_LABEL[e.label ?? ""] ?? e.label}</b></span>
+          ) : (
+            <span className="truncate text-muted">clicked <b>{e.label}</b></span>
+          )}
         </li>
       ))}
     </ol>

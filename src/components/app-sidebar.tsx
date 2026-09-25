@@ -27,6 +27,7 @@ import {
   CalendarClock,
   Bell,
   SlidersHorizontal,
+  Mail,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/store/auth";
@@ -56,6 +57,7 @@ const NAV: { group: string; items: { to: string; label: string; icon: React.Elem
       { to: "/visitors", label: "Visitors", icon: Radar },
       { to: "/quotes", label: "Quotes", icon: FilePen },
       { to: "/bookings", label: "Bookings", icon: CalendarClock },
+      { to: "/newsletter", label: "Newsletter", icon: Mail },
     ],
   },
   {

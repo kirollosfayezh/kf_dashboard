@@ -47,7 +47,10 @@ type FieldKey =
   | "googleAdsLabel"
   | "metaPixelId"
   | "tiktokPixelId"
-  | "snapchatPixelId";
+  | "snapchatPixelId"
+  | "linkedinPartnerId"
+  | "linkedinConversionId"
+  | "clarityId";
 
 interface FieldSpec {
   key: FieldKey;
@@ -59,7 +62,7 @@ interface FieldSpec {
   /** Said when the value does not match `pattern`. Describes the shape wanted. */
   shape: string;
   /** Platform this belongs to, for the Tag Manager conflict check. */
-  platform: "google" | "meta" | "tiktok" | "snapchat";
+  platform: "google" | "meta" | "tiktok" | "snapchat" | "linkedin" | "clarity";
   /** Excluded from the conflict check: a container id cannot conflict with itself. */
   container?: boolean;
 }
@@ -137,6 +140,37 @@ const FIELDS: Record<string, FieldSpec[]> = {
       platform: "snapchat",
     },
   ],
+  linkedin: [
+    {
+      key: "linkedinPartnerId",
+      label: "LinkedIn Insight Tag partner ID",
+      placeholder: "1234567",
+      where: "Campaign Manager → Analyze → Insight Tag → “I will use a tag manager” → the partner_id in the snippet. Loads the Insight Tag for audiences and page views.",
+      pattern: /^\d{4,10}$/,
+      shape: "4–10 digits",
+      platform: "linkedin",
+    },
+    {
+      key: "linkedinConversionId",
+      label: "LinkedIn conversion ID (optional)",
+      placeholder: "12345678",
+      where: "Campaign Manager → Analyze → Conversion tracking → your conversion → event-specific pixel → the conversion_id. Leads, bookings and accepted quotes are reported to it.",
+      pattern: /^\d{4,12}$/,
+      shape: "4–12 digits",
+      platform: "linkedin",
+    },
+  ],
+  clarity: [
+    {
+      key: "clarityId",
+      label: "Microsoft Clarity project ID",
+      placeholder: "abcdefghij",
+      where: "Clarity → Settings → Overview → Project ID. Free heatmaps and session replays. Because it records how pages are used, it is held back until the visitor accepts cookies, like the other tags.",
+      pattern: /^[a-z0-9]{10,12}$/,
+      shape: "10–12 lowercase letters or digits",
+      platform: "clarity",
+    },
+  ],
 };
 
 /** The site's own events, as the visitor-facing actions they correspond to. */
@@ -150,8 +184,32 @@ const EVENTS: { key: string; label: string; hint: string; sends: string }[] = [
   {
     key: "lead",
     label: "Enquiry sent",
-    hint: "The contact form or the campaign form was submitted. This is the one Google Ads counts as a conversion.",
-    sends: "generate_lead · Lead · SubmitForm · SIGN_UP",
+    hint: "The contact or campaign form was accepted by the server — not the button click. This is the one Google Ads and LinkedIn count as a conversion.",
+    sends: "generate_lead · Lead · SubmitForm · SIGN_UP (+ Google Ads, LinkedIn)",
+  },
+  {
+    key: "booking",
+    label: "Call booked",
+    hint: "A call was booked from the /book page and confirmed by the server.",
+    sends: "book_call · Schedule · SubmitForm · SIGN_UP (+ Google Ads, LinkedIn)",
+  },
+  {
+    key: "chat",
+    label: "Chat started",
+    hint: "A visitor gave their phone number and opened a new live-chat conversation. Resuming an old one does not count.",
+    sends: "chat_start · Contact · Contact",
+  },
+  {
+    key: "quote",
+    label: "Quote accepted",
+    hint: "A client accepted a quote from their private link. Sent with the quote's total and currency, so ad platforms can report revenue.",
+    sends: "purchase · Purchase · CompletePayment · PURCHASE (+ Google Ads, LinkedIn)",
+  },
+  {
+    key: "newsletter",
+    label: "Newsletter signup",
+    hint: "A new address was added to the newsletter list. Re-subscribing an existing address does not count.",
+    sends: "sign_up · Subscribe · Subscribe · SUBSCRIBE",
   },
   {
     key: "contact",
@@ -172,6 +230,8 @@ const TABS = [
   { id: "meta", label: "Meta" },
   { id: "tiktok", label: "TikTok" },
   { id: "snapchat", label: "Snapchat" },
+  { id: "linkedin", label: "LinkedIn" },
+  { id: "clarity", label: "Clarity" },
   { id: "events", label: "Events" },
   { id: "advanced", label: "Advanced" },
 ] as const;
@@ -312,6 +372,8 @@ function MarketingPage() {
     tracking.metaPixelId,
     tracking.tiktokPixelId,
     tracking.snapchatPixelId,
+    tracking.linkedinPartnerId,
+    tracking.clarityId,
   ].some((v) => clean(v as string).length > 0);
 
   /** Every platform that is configured directly, for the header summary. */
@@ -323,6 +385,8 @@ function MarketingPage() {
     if (clean(tracking.metaPixelId)) out.push("Meta");
     if (clean(tracking.tiktokPixelId)) out.push("TikTok");
     if (clean(tracking.snapchatPixelId)) out.push("Snapchat");
+    if (clean(tracking.linkedinPartnerId)) out.push("LinkedIn");
+    if (clean(tracking.clarityId)) out.push("Clarity");
     return out;
   }, [tracking, hasContainer]);
 
@@ -336,6 +400,8 @@ function MarketingPage() {
         clean(tracking.metaPixelId) && "Meta",
         clean(tracking.tiktokPixelId) && "TikTok",
         clean(tracking.snapchatPixelId) && "Snapchat",
+        clean(tracking.linkedinPartnerId) && "LinkedIn",
+        clean(tracking.clarityId) && "Clarity",
       ].filter(Boolean) as string[];
       if (direct.length) {
         out.push(
@@ -347,11 +413,13 @@ function MarketingPage() {
     const adsLabel = clean(tracking.googleAdsLabel);
     if (adsId && !adsLabel) out.push("Google Ads has a conversion ID but no label. No conversion is reported until both are filled in.");
     if (adsLabel && !adsId) out.push("Google Ads has a label but no conversion ID. No conversion is reported until both are filled in.");
+    if (clean(tracking.linkedinConversionId) && !clean(tracking.linkedinPartnerId))
+      out.push("LinkedIn has a conversion ID but no partner ID. The Insight Tag never loads without the partner ID, so nothing reaches LinkedIn until it is filled in.");
     if (tracking.consentMode && !hasAnyTag)
       out.push("Cookie consent is switched on but no tag is configured, so no bar is shown — there would be nothing to consent to.");
     if (!tracking.consentMode && hasAnyTag)
       out.push("Tags are live without asking for consent. That is your call, but visitors in the EU and UK are supposed to be asked before an advertising cookie is set.");
-    if (tracking.events?.lead === false) out.push("“Enquiry sent” is switched off, so no conversion reaches any platform — including Google Ads.");
+    if (tracking.events?.lead === false) out.push("“Enquiry sent” is switched off, so form enquiries reach no platform — including Google Ads and LinkedIn.");
     return out;
   }, [tracking, hasContainer, hasAnyTag]);
 
@@ -533,7 +601,7 @@ function MarketingPage() {
               {
                 key: "consentMode" as const,
                 label: "Ask visitors for cookie consent",
-                hint: "Shows an Accept/Decline bar on your site, and holds the Meta, TikTok and Snapchat pixels back until someone accepts. Google's tags still load but record nothing until then (Consent Mode v2). The bar only appears once at least one tag above is configured — there is nothing to ask about otherwise.",
+                hint: "Shows an Accept/Decline bar and loads no tag at all — Google included — until the visitor accepts. A decline loads nothing. Off by default because most visitors are in Egypt; switch it on if you run ads to the EU or UK. The bar only appears once at least one tag above is configured — there is nothing to ask about otherwise.",
                 value: tracking.consentMode === true,
               },
               {

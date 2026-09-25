@@ -84,7 +84,8 @@ export interface Activity {
 }
 
 export interface JourneyEvent {
-  type: "pageview" | "click";
+  /** A `conversion` row's `label` is the kind: lead, booking, chat_start, quote_accepted or newsletter. */
+  type: "pageview" | "click" | "conversion";
   path: string;
   label?: string;
   ts: number;
