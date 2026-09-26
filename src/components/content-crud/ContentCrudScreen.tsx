@@ -345,7 +345,18 @@ export function ContentCrudScreen({
                 style={{ aspectRatio: "16/9", background: "var(--panel2)", borderColor: "var(--bstrong)" }}
               >
                 {item.media?.[0] ? (
-                  <img src={item.media[0]} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                  <>
+                    <img src={item.media[0]} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                    {item.media.length > 1 ? (
+                      <span
+                        className="font-mono absolute bottom-2 right-2 rounded-full px-2 py-0.5 text-label"
+                        style={{ background: "rgba(0,0,0,.6)", color: "#fff" }}
+                        title={`${item.media.length} images`}
+                      >
+                        +{item.media.length - 1}
+                      </span>
+                    ) : null}
+                  </>
                 ) : (
                   <div
                     className="absolute inset-0 grid place-items-center px-3 text-center text-caption text-faint"
@@ -545,7 +556,15 @@ export function ContentCrudScreen({
               );
             })()}
 
-            <MediaPicker value={form.media} onChange={(media) => setForm({ ...form, media })} />
+            <MediaPicker
+              value={form.media}
+              onChange={(media) => setForm({ ...form, media })}
+              hint={
+                collection === "projects"
+                  ? "Add as many as you like: the site swipes through them every 2 seconds, in this order. The first is also the image shown when the page is shared."
+                  : undefined
+              }
+            />
 
             {/* These three drive real layout on the site — the eyebrow chip, the
                 bullet/tech list and the result badge — and were previously only

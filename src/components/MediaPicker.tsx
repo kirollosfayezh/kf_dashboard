@@ -26,9 +26,12 @@ const MAX_BYTES = 10 * 1024 * 1024;
 export function MediaPicker({
   value,
   onChange,
+  hint,
 }: {
   value: string[];
   onChange: (next: string[]) => void;
+  /** One line under the heading saying how the site uses these images. */
+  hint?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"upload" | "library">("upload");
@@ -45,33 +48,53 @@ export function MediaPicker({
       .catch((e: Error) => setError(e.message || "Failed to load the media library"));
   }, [open, tab, library]);
 
-  const add = (url: string) => {
-    if (!url || value.includes(url)) return;
-    onChange([...value, url]);
+  const add = (url: string) => addMany([url]);
+  // Several at once (a multi-file upload): one onChange with all of them, so
+  // later files do not overwrite earlier ones through a stale `value`.
+  const addMany = (urls: string[]) => {
+    const next = [...value];
+    for (const url of urls) if (url && !next.includes(url)) next.push(url);
+    if (next.length !== value.length) onChange(next);
   };
 
-  const upload = async (file: File) => {
+  const [progress, setProgress] = useState<string | null>(null);
+
+  /** Uploads each chosen file in turn and adds every one that made it. */
+  const upload = async (files: File[]) => {
     // Checked here as well as on the server: a 10 MB+ file otherwise travels all
     // the way up before being rejected.
-    if (file.size > MAX_BYTES) {
-      setError(`${file.name} is ${(file.size / 1024 / 1024).toFixed(1)} MB — the limit is 10 MB.`);
-      return;
-    }
+    const tooBig = files.filter((f) => f.size > MAX_BYTES);
+    const ok = files.filter((f) => f.size <= MAX_BYTES);
+    setError(
+      tooBig.length
+        ? tooBig.map((f) => `${f.name} is ${(f.size / 1024 / 1024).toFixed(1)} MB — the limit is 10 MB.`).join(" ")
+        : null,
+    );
+    if (!ok.length) return;
     setBusy(true);
-    setError(null);
+    const urls: string[] = [];
+    const failed: string[] = [];
     try {
-      const body = new FormData();
-      body.append("file", file);
-      // Keep the created item: it carries the URL, which the Media screen used
-      // to throw away before re-listing.
-      const created = await api.post<MediaItem>("/admin/media", body);
-      add(created.url);
+      for (const [i, file] of ok.entries()) {
+        setProgress(ok.length > 1 ? `Uploading ${i + 1} of ${ok.length}…` : "Uploading…");
+        try {
+          const body = new FormData();
+          body.append("file", file);
+          // Keep the created item: it carries the URL, which the Media screen
+          // used to throw away before re-listing.
+          const created = await api.post<MediaItem>("/admin/media", body);
+          urls.push(created.url);
+        } catch (e) {
+          failed.push(`${file.name}: ${e instanceof Error ? e.message : "upload failed"}`);
+        }
+      }
+      addMany(urls);
       setLibrary(null); // force a refresh next time the library tab opens
-      setOpen(false);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Upload failed");
+      if (failed.length) setError(failed.join(" "));
+      else if (!tooBig.length) setOpen(false);
     } finally {
       setBusy(false);
+      setProgress(null);
       if (fileRef.current) fileRef.current.value = "";
     }
   };
@@ -87,8 +110,9 @@ export function MediaPicker({
   return (
     <div className="mb-4">
       <div className="mb-1.5 text-caption font-semibold text-muted">
-        Images
+        Images{value.length > 1 ? ` · ${value.length}` : ""}
       </div>
+      {hint ? <p className="-mt-0.5 mb-2 text-caption text-faint">{hint}</p> : null}
 
       {value.length ? (
         <div className="mb-2.5 flex flex-col gap-2">
@@ -121,11 +145,23 @@ export function MediaPicker({
                   type="button"
                   onClick={() => move(i, i - 1)}
                   className="shrink-0 rounded-xs border px-2 py-1 text-label border-line text-muted"
-                  title="Make this the main image"
+                  title="Move earlier in the order (the first is the main image)"
+                  aria-label="Move image up"
                 >
                   ↑
                 </button>
               )}
+              {i < value.length - 1 ? (
+                <button
+                  type="button"
+                  onClick={() => move(i, i + 1)}
+                  className="shrink-0 rounded-xs border px-2 py-1 text-label border-line text-muted"
+                  title="Move later in the order"
+                  aria-label="Move image down"
+                >
+                  ↓
+                </button>
+              ) : null}
               <button
                 type="button"
                 onClick={() => onChange(value.filter((u) => u !== url))}
@@ -149,7 +185,7 @@ export function MediaPicker({
       )}
 
       <Button type="button" variant="ghost" onClick={() => setOpen((o) => !o)}>
-        {open ? "Close" : value.length ? "Add another image" : "Add an image"}
+        {open ? "Close" : value.length ? "Add more images" : "Add images"}
       </Button>
 
       {open ? (
@@ -183,17 +219,18 @@ export function MediaPicker({
                 ref={fileRef}
                 type="file"
                 accept={ACCEPT}
+                multiple
                 className="hidden"
                 onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) void upload(file);
+                  const files = Array.from(e.target.files ?? []);
+                  if (files.length) void upload(files);
                 }}
               />
               <Button type="button" onClick={() => fileRef.current?.click()} disabled={busy}>
-                {busy ? "Uploading…" : "Choose a file"}
+                {busy ? (progress ?? "Uploading…") : "Choose files"}
               </Button>
               <p className="mt-2 text-caption text-faint">
-                JPEG, PNG, WebP, GIF, AVIF, MP4 or PDF — up to 10 MB. SVG is not accepted.
+                Pick one or several at once. JPEG, PNG, WebP, GIF, AVIF, MP4 or PDF — up to 10 MB each. SVG is not accepted.
               </p>
             </div>
           ) : library ? (
