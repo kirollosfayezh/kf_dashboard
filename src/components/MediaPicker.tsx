@@ -3,6 +3,7 @@ import { ImagePlus, Link2, Trash2, Upload, X } from "lucide-react";
 import { api } from "@/services/http";
 import type { MediaItem } from "@/services/domain-types";
 import { Button, ErrorBanner, Spinner } from "@/components/ui";
+import { mediaPreviewUrl } from "@/lib/utils";
 
 /**
  * Picks images for a content item: upload a new file, or choose one already in
@@ -122,7 +123,7 @@ export function MediaPicker({
               className="flex items-center gap-2.5 rounded-control border p-2 border-line bg-raised"
             >
               <img
-                src={url}
+                src={mediaPreviewUrl(url)}
                 alt=""
                 className="h-11 w-11 shrink-0 rounded-xs object-cover bg-panel"
                 onError={(e) => {
@@ -141,15 +142,26 @@ export function MediaPicker({
                   MAIN
                 </span>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => move(i, i - 1)}
-                  className="shrink-0 rounded-xs border px-2 py-1 text-label border-line text-muted"
-                  title="Move earlier in the order (the first is the main image)"
-                  aria-label="Move image up"
-                >
-                  ↑
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => move(i, 0)}
+                    className="shrink-0 rounded-xs border px-2 py-1 text-label font-semibold border-line"
+                    style={{ color: "#FF9A4D" }}
+                    title="Show this image first on the site and when the page is shared"
+                  >
+                    Make main
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => move(i, i - 1)}
+                    className="shrink-0 rounded-xs border px-2 py-1 text-label border-line text-muted"
+                    title="Move earlier in the order"
+                    aria-label="Move image up"
+                  >
+                    ↑
+                  </button>
+                </>
               )}
               {i < value.length - 1 ? (
                 <button
@@ -250,7 +262,7 @@ export function MediaPicker({
                       style={{ borderColor: chosen ? "#FF6A00" : "var(--border)" }}
                       title={m.url}
                     >
-                      <img src={m.url} alt="" className="h-full w-full object-cover" />
+                      <img src={mediaPreviewUrl(m.url)} alt="" className="h-full w-full object-cover" />
                       {chosen ? (
                         <span
                           className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full text-label"

@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { api } from "@/services/http";
 import type { MediaItem } from "@/services/domain-types";
 import { ImagePlus } from "lucide-react";
+import { mediaPreviewUrl } from "@/lib/utils";
 import {
   AddButton,
   ConfirmDialog,
@@ -134,7 +135,7 @@ function MediaPage() {
                 className="relative aspect-square bg-raised"
               >
                 {item.contentType?.startsWith("image/") ? (
-                  <img src={item.url} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                  <img src={mediaPreviewUrl(item.url)} alt="" className="absolute inset-0 h-full w-full object-cover" />
                 ) : (
                   <div
                     className="absolute inset-0 grid place-items-center px-3 text-center text-caption text-faint"

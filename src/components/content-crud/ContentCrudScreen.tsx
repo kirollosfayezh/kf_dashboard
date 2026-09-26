@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/services/http";
 import type { ContentCollection, ContentItem } from "@/services/domain-types";
 import { MediaPicker } from "@/components/MediaPicker";
+import { mediaPreviewUrl } from "@/lib/utils";
 import {
   AddButton,
   Button,
@@ -346,7 +347,7 @@ export function ContentCrudScreen({
               >
                 {item.media?.[0] ? (
                   <>
-                    <img src={item.media[0]} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                    <img src={mediaPreviewUrl(item.media[0])} alt="" className="absolute inset-0 h-full w-full object-cover" />
                     {item.media.length > 1 ? (
                       <span
                         className="font-mono absolute bottom-2 right-2 rounded-full px-2 py-0.5 text-label"

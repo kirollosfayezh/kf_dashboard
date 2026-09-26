@@ -59,3 +59,18 @@ export function formatDate(iso: string | undefined): string {
     return iso;
   }
 }
+
+/**
+ * The public site's origin. `VITE_SITE_URL` when set; otherwise the current
+ * deployment, so previews still work on a dashboard built without it.
+ */
+export const SITE_ORIGIN = (import.meta.env.VITE_SITE_URL || "https://kf-site-sandy.vercel.app").replace(/\/+$/, "");
+
+/**
+ * A media URL the dashboard can display. Site-relative paths
+ * (`/projects/gentrack.webp`) live on the site, not on the dashboard's own
+ * origin, where they showed as blank thumbnails.
+ */
+export function mediaPreviewUrl(url: string): string {
+  return url.startsWith("/") && !url.startsWith("//") ? `${SITE_ORIGIN}${url}` : url;
+}
