@@ -24,15 +24,25 @@ import { mediaPreviewUrl } from "@/lib/utils";
 const ACCEPT = "image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,application/pdf";
 const MAX_BYTES = 10 * 1024 * 1024;
 
+type Device = "photo" | "desktop" | "mobile";
+const DEVICES: { id: Device; label: string; hint: string }[] = [
+  { id: "photo", label: "Photo", hint: "Fills the box" },
+  { id: "desktop", label: "Desktop", hint: "Shown inside a browser window" },
+  { id: "mobile", label: "Mobile", hint: "Shown inside a phone" },
+];
+
 export function MediaPicker({
   value,
   onChange,
   hint,
+  devices = false,
 }: {
   value: string[];
   onChange: (next: string[]) => void;
   /** One line under the heading saying how the site uses these images. */
   hint?: string;
+  /** Offer the Photo / Desktop / Mobile switch on each image (projects). */
+  devices?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"upload" | "library">("upload");
@@ -100,6 +110,15 @@ export function MediaPicker({
     }
   };
 
+  /** Photo / desktop screenshot / phone screenshot, stored as the URL's fragment. */
+  const deviceOf = (url: string): Device => (/#desktop$/.test(url) ? "desktop" : /#mobile$/.test(url) ? "mobile" : "photo");
+  const setDevice = (i: number, device: Device) => {
+    const base = value[i].replace(/#.*$/, "");
+    const next = [...value];
+    next[i] = device === "photo" ? base : `${base}#${device}`;
+    onChange(next);
+  };
+
   const move = (from: number, to: number) => {
     if (to < 0 || to >= value.length) return;
     const next = [...value];
@@ -120,7 +139,7 @@ export function MediaPicker({
           {value.map((url, i) => (
             <div
               key={url}
-              className="flex items-center gap-2.5 rounded-control border p-2 border-line bg-raised"
+              className="flex flex-wrap items-center gap-2.5 rounded-control border p-2 border-line bg-raised"
             >
               <img
                 src={mediaPreviewUrl(url)}
@@ -131,8 +150,37 @@ export function MediaPicker({
                 }}
               />
               <span className="font-mono min-w-0 flex-1 truncate text-caption text-faint">
-                {url}
+                {url.replace(/#.*$/, "")}
               </span>
+              {devices ? (
+                <div
+                  className="flex shrink-0 overflow-hidden rounded-xs border border-line"
+                  role="radiogroup"
+                  aria-label="How the site shows this image"
+                >
+                  {DEVICES.map((d) => {
+                    const on = deviceOf(url) === d.id;
+                    return (
+                      <button
+                        key={d.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={on}
+                        title={d.hint}
+                        onClick={() => setDevice(i, d.id)}
+                        className="px-2 py-1 text-label"
+                        style={{
+                          background: on ? "rgba(255,106,0,.14)" : "transparent",
+                          color: on ? "#FF9A4D" : "var(--text2)",
+                          fontWeight: on ? 600 : 400,
+                        }}
+                      >
+                        {d.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
               {i === 0 ? (
                 <span
                   className="font-mono shrink-0 rounded-full px-2 py-0.5 text-label tracking-[.06em]"

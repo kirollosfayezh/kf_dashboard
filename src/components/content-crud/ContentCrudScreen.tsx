@@ -560,9 +560,10 @@ export function ContentCrudScreen({
             <MediaPicker
               value={form.media}
               onChange={(media) => setForm({ ...form, media })}
+              devices={collection === "projects"}
               hint={
                 collection === "projects"
-                  ? "Add as many as you like: the site swipes through them every 2 seconds, in this order. The first is also the image shown when the page is shared."
+                  ? "Add as many as you like: the site swipes through them every 2 seconds, in this order. Mark screenshots Desktop or Mobile and the site shows the whole capture inside a browser window or a phone; Photo fills the box. The first image is also the one shown when the page is shared."
                   : undefined
               }
             />
