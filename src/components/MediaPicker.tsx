@@ -110,6 +110,18 @@ export function MediaPicker({
     }
   };
 
+  // Each image's width / height, measured from its thumbnail, to warn when a
+  // flag does not match the picture (a wide image marked Mobile, …).
+  const [shapes, setShapes] = useState<Record<string, number>>({});
+  const mismatch = (url: string): string | null => {
+    const r = shapes[url.replace(/#.*$/, "")];
+    if (!r) return null;
+    const d = deviceOf(url);
+    if (d === "mobile" && r > 0.8) return "This image is wide, so it is probably not a phone screenshot. The phone frame will crop it.";
+    if (d === "desktop" && r < 1.1) return "This image is tall, so it is probably not a desktop screenshot. The browser frame will crop it.";
+    return null;
+  };
+
   /** Photo / desktop screenshot / phone screenshot, stored as the URL's fragment. */
   const deviceOf = (url: string): Device => (/#desktop$/.test(url) ? "desktop" : /#mobile$/.test(url) ? "mobile" : "photo");
   const setDevice = (i: number, device: Device) => {
@@ -147,6 +159,11 @@ export function MediaPicker({
                 className="h-11 w-11 shrink-0 rounded-xs object-cover bg-panel"
                 onError={(e) => {
                   (e.currentTarget as HTMLImageElement).style.opacity = "0.25";
+                }}
+                onLoad={(e) => {
+                  const img = e.currentTarget as HTMLImageElement;
+                  const base = url.replace(/#.*$/, "");
+                  if (img.naturalWidth) setShapes((m) => (m[base] ? m : { ...m, [base]: img.naturalWidth / img.naturalHeight }));
                 }}
               />
               <span className="font-mono min-w-0 flex-1 truncate text-caption text-faint">
@@ -230,6 +247,11 @@ export function MediaPicker({
               >
                 <Trash2 size={14} />
               </button>
+              {devices && mismatch(url) ? (
+                <p className="w-full text-caption" style={{ color: "#FF9A4D" }} role="note">
+                  {mismatch(url)}
+                </p>
+              ) : null}
             </div>
           ))}
         </div>
