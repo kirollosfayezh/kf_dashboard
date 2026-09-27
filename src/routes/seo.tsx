@@ -62,7 +62,10 @@ const PAGES: { key: string; label: string; path: string }[] = [
 const TITLE_LIMIT = 60;
 const DESC_LIMIT = 155;
 
-type Group = "pages" | "articles" | "projects";
+type Group = "pages" | "services" | "articles" | "projects";
+
+/** The site's built-in copy per page key, from its build-time `seo-defaults.json`. */
+type Defaults = Record<string, { title: Partial<Translated>; description: Partial<Translated> }>;
 
 /** A row in the left-hand list: either an overridable page or a content item
  *  whose metadata is derived from the content itself. */
@@ -135,6 +138,8 @@ function SerpPreview({
   description,
   dir,
   fallbackNote,
+  defaultTitle,
+  defaultDescription,
 }: {
   origin: string;
   path: string;
@@ -142,22 +147,37 @@ function SerpPreview({
   description: string;
   dir?: "ltr" | "rtl";
   fallbackNote?: string;
+  /** What a blank field falls back to, shown dimmed so it reads as inherited. */
+  defaultTitle?: string;
+  defaultDescription?: string;
 }) {
   const shown = (s: string, limit: number) => (s.length > limit ? `${s.slice(0, limit - 1)}…` : s);
   const url = `${origin.replace(/^https?:\/\//, "")}${path === "/" ? "" : path}`;
   const placeholder = fallbackNote ?? "Using the site default";
+  const inherited = (!title && !!defaultTitle) || (!description && !!defaultDescription);
   return (
     <div className="rounded-control border border-line bg-raised p-4">
       <div className="label mb-2 flex items-center gap-1.5 text-faint">
         <Search size={12} />
         Search preview
+        {inherited ? (
+          <span className="ml-auto rounded-full border border-line px-2 py-0.5 text-[10px] normal-case tracking-normal">
+            Site default
+          </span>
+        ) : null}
       </div>
       <div className="font-mono text-caption text-muted">{url}</div>
       <div className="mt-0.5 text-[16px] leading-[1.3] text-info" dir={dir}>
-        {shown(title, TITLE_LIMIT) || <span className="text-faint" dir="ltr">{placeholder}</span>}
+        {shown(title, TITLE_LIMIT) ||
+          (defaultTitle ? shown(defaultTitle, TITLE_LIMIT) : <span className="text-faint" dir="ltr">{placeholder}</span>)}
       </div>
       <div className="mt-1 text-caption text-muted" dir={dir}>
-        {shown(description, DESC_LIMIT) || <span className="text-faint" dir="ltr">{placeholder}</span>}
+        {shown(description, DESC_LIMIT) ||
+          (defaultDescription ? (
+            shown(defaultDescription, DESC_LIMIT)
+          ) : (
+            <span className="text-faint" dir="ltr">{placeholder}</span>
+          ))}
       </div>
     </div>
   );
@@ -167,6 +187,8 @@ function SeoPage() {
   const [rows, setRows] = useState<SeoOverride[] | null>(null);
   const [articles, setArticles] = useState<ContentItem[]>([]);
   const [projects, setProjects] = useState<ContentItem[]>([]);
+  const [services, setServices] = useState<ContentItem[]>([]);
+  const [defaults, setDefaults] = useState<Defaults>({});
   const [error, setError] = useState<string | null>(null);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [savedKey, setSavedKey] = useState<string | null>(null);
@@ -180,19 +202,37 @@ function SeoPage() {
 
   const origin = import.meta.env.VITE_SITE_URL?.trim() || "https://your-site.com";
 
+  // The live site's built-in titles and descriptions, so a blank field shows
+  // what it actually falls back to. Missing (an older deploy, offline) just
+  // means the preview says "Using the site default" as before.
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${origin.replace(/\/+$/, "")}/seo-defaults.json`)
+      .then((r) => (r.ok ? (r.json() as Promise<Defaults>) : {}))
+      .then((d) => {
+        if (!cancelled) setDefaults(d);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [origin]);
+
   useEffect(() => {
     (async () => {
       try {
         // Articles and case studies are listed so this screen shows every
         // indexable URL, not just the nine the override table covers.
-        const [data, posts, projs] = await Promise.all([
+        const [data, posts, projs, svcs] = await Promise.all([
           api.get<SeoOverride[]>("/admin/seo"),
           api.get<ContentItem[]>("/admin/content/blogPosts").catch(() => []),
           api.get<ContentItem[]>("/admin/content/projects").catch(() => []),
+          api.get<ContentItem[]>("/admin/content/services").catch(() => []),
         ]);
         setRows(data);
         setArticles(posts);
         setProjects(projs);
+        setServices(svcs);
         const next: Record<string, Draft> = {};
         for (const p of PAGES) next[p.key] = fromRow(data.find((x) => x.key === p.key));
         setDraft(next);
@@ -220,12 +260,22 @@ function SeoPage() {
       derivedTitle: item.title?.en,
       derivedDesc: item.summary?.en,
     });
+    // A service landing page carries its own SEO title and description in
+    // meta (from its Markdown source); the card title/summary are the fallback.
+    const en = (v: unknown) =>
+      v && typeof v === "object" && typeof (v as { en?: unknown }).en === "string" ? (v as { en: string }).en.trim() : "";
+    const serviceRow = (item: ContentItem): Entry => ({
+      ...contentRow(item, "services", "/services", "/services"),
+      derivedTitle: en(item.meta?.seoTitle) || `${en(item.meta?.headline) || item.title?.en || ""} | KF Tech Solutions`,
+      derivedDesc: en(item.meta?.seoDescription) || en(item.meta?.lede) || item.summary?.en,
+    });
     return [
       ...pageRows,
+      ...services.map(serviceRow),
       ...articles.map((a) => contentRow(a, "articles", "/blog", "/blogPosts")),
       ...projects.map((p) => contentRow(p, "projects", "/projects", "/projects")),
     ];
-  }, [articles, projects]);
+  }, [articles, projects, services]);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -282,6 +332,7 @@ function SeoPage() {
 
   const counts = {
     pages: PAGES.length,
+    services: services.length,
     articles: articles.length,
     projects: projects.length,
   };
@@ -317,6 +368,7 @@ function SeoPage() {
             }}
             options={[
               { value: "pages", label: `Pages ${counts.pages}` },
+              { value: "services", label: `Services ${counts.services}` },
               { value: "articles", label: `Articles ${counts.articles}` },
               { value: "projects", label: `Case studies ${counts.projects}` },
             ]}
@@ -439,7 +491,11 @@ function SeoPage() {
                         dir={lang.dir}
                         value={d.title[lang.code]}
                         onChange={(e) => setText(current.id, "title", lang.code, e.target.value)}
-                        placeholder={lang.code === "en" ? "Leave blank to use the site default" : d.title.en || undefined}
+                        placeholder={
+                          (lang.code !== "en" && d.title.en) ||
+                          defaults[current.id]?.title?.[lang.code] ||
+                          "Leave blank to use the site default"
+                        }
                       />
                       <div className="mt-1.5 text-right">
                         <Counter value={d.title[lang.code]} limit={TITLE_LIMIT} />
@@ -459,7 +515,11 @@ function SeoPage() {
                         dir={lang.dir}
                         value={d.description[lang.code]}
                         onChange={(e) => setText(current.id, "description", lang.code, e.target.value)}
-                        placeholder={lang.code === "en" ? "Leave blank to use the site default" : d.description.en || undefined}
+                        placeholder={
+                          (lang.code !== "en" && d.description.en) ||
+                          defaults[current.id]?.description?.[lang.code] ||
+                          "Leave blank to use the site default"
+                        }
                       />
                       <div className="mt-1.5 text-right">
                         <Counter value={d.description[lang.code]} limit={DESC_LIMIT} />
@@ -511,6 +571,8 @@ function SeoPage() {
                     path={lang.code === "en" ? current.path : `/${lang.code}${current.path === "/" ? "" : current.path}`}
                     title={shownIn(d.title, lang.code)}
                     description={shownIn(d.description, lang.code)}
+                    defaultTitle={defaults[current.id]?.title?.[lang.code]}
+                    defaultDescription={defaults[current.id]?.description?.[lang.code]}
                     dir={lang.dir}
                   />
                   {d.image ? (
@@ -552,9 +614,9 @@ function SeoPage() {
               </div>
 
               <Callout tone="info" icon={<FileText size={14} />} className="mb-5">
-                This page's search title and description come from the {current.group === "articles" ? "article" : "project"} itself
-                — its title and summary — so there is nothing to override here. Edit the content and the
-                search result follows automatically.
+                {current.group === "services"
+                  ? "This landing page's search title and description come from the service itself — its SEO title and description in each language, written with the page's text — so there is nothing to override here. Edit the service and the search result follows after a redeploy."
+                  : `This page's search title and description come from the ${current.group === "articles" ? "article" : "project"} itself — its title and summary — so there is nothing to override here. Edit the content and the search result follows automatically.`}
               </Callout>
 
               <SerpPreview
@@ -567,7 +629,7 @@ function SeoPage() {
 
               <Link to={current.editRoute ?? "/"} className="mt-5 inline-block">
                 <Button icon={<ExternalLink size={14} />}>
-                  Edit this {current.group === "articles" ? "article" : "project"}
+                  Edit this {current.group === "articles" ? "article" : current.group === "services" ? "service" : "project"}
                 </Button>
               </Link>
             </>
