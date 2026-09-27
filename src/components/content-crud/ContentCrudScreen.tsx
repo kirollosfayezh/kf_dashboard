@@ -815,6 +815,20 @@ export function ContentCrudScreen({
               </>
             ) : null}
 
+            {collection === "services" ? (
+              <div className="mb-4 rounded-control border px-[14px] py-3 text-caption border-line bg-raised text-faint">
+                Landing page:{" "}
+                <span className="font-mono text-muted">
+                  {`${SITE_URL}/services/${form.slug.trim() || "your-slug"}`}
+                </span>
+                <br />
+                Title and summary are the card on /services. The body is the full landing page in
+                Markdown (## headings, lists, links); a &quot;## Frequently asked questions&quot; section
+                with ### questions becomes FAQ data for Google. A language appears once its body is
+                written. Redeploy the site after editing so search engines see the change.
+              </div>
+            ) : null}
+
             <label className="flex items-center gap-2.5 text-ui font-medium">
               <Toggle
                 checked={form.published}
