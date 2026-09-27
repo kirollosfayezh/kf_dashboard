@@ -484,7 +484,9 @@ function SeoPage() {
                       hint={
                         lang.code === "en"
                           ? "The clickable headline in search results and on the browser tab. Leave blank to use the site default."
-                          : `Leave blank to show the English text to ${lang.label} readers.`
+                          : d.title.en.trim()
+                            ? `Leave blank to show your English title to ${lang.label} readers.`
+                            : `Leave blank to use the site's built-in ${lang.label} title.`
                       }
                     >
                       <Input
@@ -507,7 +509,9 @@ function SeoPage() {
                       hint={
                         lang.code === "en"
                           ? "The grey summary under the headline. Leave blank to use the site default."
-                          : `Leave blank to show the English text to ${lang.label} readers.`
+                          : d.description.en.trim()
+                            ? `Leave blank to show your English description to ${lang.label} readers.`
+                            : `Leave blank to use the site's built-in ${lang.label} description.`
                       }
                     >
                       <Textarea
