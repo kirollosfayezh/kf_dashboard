@@ -54,18 +54,18 @@ function ContentTable({ items, onEdit, onDelete, onTogglePublished }: ContentLis
       ]}
       rowKey={(i) => items[i].id}
       rows={items.map((item) => [
-        <span className="font-mono text-caption text-faint">
+        <span key="order" className="font-mono text-caption text-faint">
           {item.order}
         </span>,
-        <span className="block truncate font-semibold">{item.title?.en || "(untitled)"}</span>,
-        <span className="font-mono block truncate text-caption text-faint">
+        <span key="title" className="block truncate font-semibold">{item.title?.en || "(untitled)"}</span>,
+        <span key="slug" className="font-mono block truncate text-caption text-faint">
           {item.slug}
         </span>,
-        <div className="flex items-center gap-2">
+        <div key="status" className="flex items-center gap-2">
           <PublishToggle item={item} onToggle={onTogglePublished} />
           <StatusPill published={item.published} />
         </div>,
-        <RowActions onEdit={() => onEdit(item)} onDelete={() => onDelete(item)} />,
+        <RowActions key="actions" onEdit={() => onEdit(item)} onDelete={() => onDelete(item)} />,
       ])}
     />
   );

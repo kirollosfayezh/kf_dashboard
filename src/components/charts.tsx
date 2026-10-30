@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Card, PanelHead } from "@/components/ui";
+import { Card } from "@/components/ui";
 
 /* ---------------------------------------------------------------------------
  * Chart primitives for the Analytics screen.
