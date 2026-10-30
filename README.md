@@ -108,6 +108,8 @@ components/content-crud/
 - `src/components/ui/` — the design-system primitives (buttons, fields,
   dialogs, tables, feedback), one file per concern behind `ui/index.ts`;
   import them from `@/components/ui`
+- `src/components/charts/` — SVG chart primitives for Analytics and Overview,
+  each with a table twin so no value is hover-only
 - `src/components/content-crud/` — the one generic list+form+delete screen
   reused by `projects`, `services`, `solutions`, `aboutSections`, `blogPosts`,
   `testimonials`, `faqs`, `legalPages` and `promos` (all share the same
@@ -176,8 +178,9 @@ What is covered, and why:
   `FormData` bodies, envelope unwrapping, 401 handling, network failures and
   the missing-`VITE_API_BASE_URL` diagnosis.
 - **Reporting and formatting** — analytics gap-filling, period deltas, traffic
-  channel classification and CSV export; CRM money/time/flag formatters;
-  `toneForStatus`; the `tailwind-merge` config behind `cn()`.
+  channel classification and CSV export; chart axis/number scaling; CRM
+  money/time/flag formatters; `toneForStatus`; the `tailwind-merge` config
+  behind `cn()`.
 
 Not covered: rendered screens and real browser behaviour (overlay placement,
 responsive layout) — there are no component or end-to-end tests yet.
