@@ -149,6 +149,12 @@ describe("toPayload", () => {
     expect(toPayload(form({ meta: { sample: "true" } })).meta).not.toHaveProperty("sample");
   });
 
+  it("writes concept only when it is exactly true", () => {
+    expect(toPayload(form({ meta: { concept: true } })).meta.concept).toBe(true);
+    expect(toPayload(form({ meta: { concept: false } })).meta).not.toHaveProperty("concept");
+    expect(toPayload(form({ meta: { concept: "true" } })).meta).not.toHaveProperty("concept");
+  });
+
   it("coerces a non-numeric order to 0", () => {
     expect(toPayload(form({ order: Number.NaN })).order).toBe(0);
     expect(toPayload(form({ order: 3 })).order).toBe(3);

@@ -144,6 +144,9 @@ export function toPayload(form: FormState) {
   // all, so the site's "is this a sample?" check is a plain `=== true`.
   if (form.meta.sample === true) meta.sample = true;
   else delete meta.sample;
+  // Same shape for a concept demo (a made-up business, listed apart from client work).
+  if (form.meta.concept === true) meta.concept = true;
+  else delete meta.concept;
 
   return {
     slug: form.slug.trim(),
