@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Bell, Check, Send } from "lucide-react";
 import { crmSettings, notifications as api, type AdminNotification, type CrmSettings } from "@/services/crm";
-import { ago } from "@/lib/crm";
 import { Button, Callout, Card, EmptyState, Field, Input, LoadingState, PageHeader, Toggle } from "@/components/ui";
 import { useNotificationStore } from "@/store/notifications";
 import { AlertRow } from "@/components/notification-bell";
