@@ -1,5 +1,6 @@
 import { Field, Input, Toggle } from "@/components/ui";
 import { sitePageUrl, type FormState, type MetaTextField } from "./form-model";
+import { DemoFields } from "./DemoFields";
 
 /**
  * The editor sections that only one collection shows. Every other collection
@@ -221,6 +222,7 @@ export function ProjectFields({
           label="Illustrative sample (not a delivered project)"
         />
       </div>
+      <DemoFields form={form} setForm={setForm} setLink={setLink} />
       <div
         className="mb-4 rounded-control border px-[14px] py-3 text-caption border-line bg-raised text-faint"
       >
