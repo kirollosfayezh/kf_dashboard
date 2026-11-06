@@ -347,8 +347,8 @@ function SeoPage() {
       {error ? <Callout tone="danger" className="mb-4">{error}</Callout> : null}
 
       <Callout tone="neutral" icon={<Info size={14} />} className="mb-4">
-        Saving writes the override immediately, but the public site bakes these into its HTML at build
-        time — redeploy the site for a change to reach search engines and social scrapers.
+        Saving rebuilds the public site automatically (a few minutes); search engines and social
+        scrapers pick the change up on their next crawl.
       </Callout>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">

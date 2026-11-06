@@ -94,6 +94,29 @@ export interface SocialLinks {
   tiktok?: string;
 }
 
+/** The other names the company is known by, per site language, for the
+ *  structured data's `alternateName`. The full name itself is fixed in the site. */
+export interface BrandNames {
+  en: string[];
+  ar: string[];
+  de: string[];
+  fr: string[];
+}
+
+/** The facts that tell this company apart from others with a similar name —
+ *  published in the site's structured data and llms.txt. Lists are already
+ *  trimmed and deduped by the server; blank `foundingDate` means the site
+ *  default. */
+export interface BrandIdentity {
+  alternateNames: BrandNames;
+  foundingDate: string;
+  /** The founder's own profiles (Person.sameAs), not the company's. */
+  founderProfiles: string[];
+  /** Directories and other non-social listings (Organization.sameAs). */
+  profiles: string[];
+  notAffiliatedWith: { name: string; url: string }[];
+}
+
 export interface SiteSettings extends Record<string, unknown> {
   siteName: string;
   tagline: LocalizedText;
@@ -105,6 +128,8 @@ export interface SiteSettings extends Record<string, unknown> {
   pixels: TrackingSettings;
   contact: { email?: string; phone?: string; whatsapp?: string };
   social?: SocialLinks;
+  /** Optional so documents saved before the block existed still type. */
+  brand?: BrandIdentity;
   updatedAt: string;
 }
 

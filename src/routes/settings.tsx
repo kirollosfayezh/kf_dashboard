@@ -1,17 +1,24 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Info, Trash2 } from "lucide-react";
 import { api } from "@/services/http";
-import type { SiteSettings, SocialLinks } from "@/services/domain-types";
+import type { BrandIdentity, SiteSettings, SocialLinks } from "@/services/domain-types";
+import { CMS_LANGS, type LangCode } from "@/components/content-crud/form-model";
+import { hasEntries, linesToText, textToLines, toBrand } from "@/lib/brand-fields";
 import {
+  AddButton,
   Button,
+  Callout,
   Card,
   ErrorBanner,
+  IconButton,
   PanelHead,
   Field,
   GradientButton,
   Input,
   SectionHead,
   Spinner,
+  Textarea,
   Toggle,
 } from "@/components/ui";
 
@@ -40,6 +47,7 @@ function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [brandLang, setBrandLang] = useState<LangCode>("en");
 
   useEffect(() => {
     (async () => {
@@ -80,6 +88,13 @@ function SettingsPage() {
       </div>
     );
   }
+
+  // An old document has no `brand`; the form edits the filled-in shape and the
+  // whole-document PATCH below carries it to the server, which normalises.
+  const brand = toBrand(settings.brand);
+  const setBrand = (patch: Partial<BrandIdentity>) =>
+    setSettings({ ...settings, brand: { ...brand, ...patch } });
+  const affiliated = brand.notAffiliatedWith;
 
   const languageRow = (code: string) => {
     const existing = settings.languages.find((l) => l.code === code);
@@ -308,6 +323,154 @@ function SettingsPage() {
               />
             </Field>
           ))}
+        </Card>
+
+        {/* Another company trades under a near-identical name, and search
+            engines and assistants merge the two unless the site states its own
+            facts in machine-readable form. These feed the Organization node,
+            the founder's Person node and llms.txt; the full name itself stays
+            fixed in the site. */}
+        <Card>
+          <PanelHead
+            title="Brand identity"
+            subtitle="The facts search engines and AI assistants use to tell this company apart from others with a similar name. Published in the site's structured data and llms.txt."
+          />
+          <Callout tone="neutral" icon={<Info size={14} />} className="mb-4">
+            Saving rebuilds the public site automatically (a few minutes); search engines and assistants
+            pick the change up on their next crawl.
+          </Callout>
+
+          {/* One tab per language, as on the SEO screen. The dot says whether
+              that language has names of its own. */}
+          <div
+            className="mb-3 flex overflow-hidden rounded-control border border-line"
+            role="tablist"
+            aria-label="Also-known-as language"
+          >
+            {CMS_LANGS.map((l) => (
+              <button
+                key={l.code}
+                type="button"
+                role="tab"
+                aria-selected={brandLang === l.code}
+                onClick={() => setBrandLang(l.code)}
+                className="flex flex-1 items-center justify-center gap-1.5 px-2 py-2 text-caption font-semibold"
+                style={{
+                  background: brandLang === l.code ? "rgba(255,106,0,.12)" : "transparent",
+                  color: brandLang === l.code ? "var(--text)" : "var(--text2)",
+                }}
+              >
+                {l.label}
+                <span
+                  aria-hidden="true"
+                  title={hasEntries(brand.alternateNames[l.code]) ? "Has names" : "Empty"}
+                  className="h-[6px] w-[6px] shrink-0 rounded-full"
+                  style={{
+                    background: hasEntries(brand.alternateNames[l.code]) ? "#4ADE80" : "var(--bstrong)",
+                  }}
+                />
+              </button>
+            ))}
+          </div>
+          {CMS_LANGS.filter((l) => l.code === brandLang).map((l) => (
+            <Field key={l.code} label="Also known as" hint="One per line; the full name is fixed in the site.">
+              <Textarea
+                rows={3}
+                dir={l.dir}
+                spellCheck={false}
+                value={linesToText(brand.alternateNames[l.code])}
+                onChange={(e) =>
+                  setBrand({ alternateNames: { ...brand.alternateNames, [l.code]: textToLines(e.target.value) } })
+                }
+                placeholder={l.code === "en" ? "KF Tech\nKFTech" : ""}
+              />
+            </Field>
+          ))}
+
+          <Field label="Founded (year)" hint="Blank uses the site default.">
+            <Input
+              inputMode="numeric"
+              dir="ltr"
+              autoComplete="off"
+              value={brand.foundingDate}
+              onChange={(e) => setBrand({ foundingDate: e.target.value })}
+              placeholder="2020"
+            />
+          </Field>
+
+          <Field
+            label="Founder's profiles"
+            hint="One https:// link per line; personal profiles only (GitHub, personal LinkedIn) — they describe the founder, not the company."
+          >
+            <Textarea
+              rows={3}
+              dir="ltr"
+              spellCheck={false}
+              autoComplete="off"
+              value={linesToText(brand.founderProfiles)}
+              onChange={(e) => setBrand({ founderProfiles: textToLines(e.target.value) })}
+              placeholder="https://github.com/…"
+            />
+          </Field>
+
+          <Field
+            label="Company profiles and directories"
+            hint="One https:// link per line: Clutch, GoodFirms, Crunchbase, the GitHub organisation, the Google Business Profile share link, Bing Places. Social networks belong in Social profiles above."
+          >
+            <Textarea
+              rows={4}
+              dir="ltr"
+              spellCheck={false}
+              autoComplete="off"
+              value={linesToText(brand.profiles)}
+              onChange={(e) => setBrand({ profiles: textToLines(e.target.value) })}
+              placeholder="https://clutch.co/profile/…"
+            />
+          </Field>
+
+          <div className="mb-1.5 text-caption font-semibold text-muted">Not affiliated with</div>
+          <div className="mb-2 flex flex-col gap-2">
+            {affiliated.map((row, k) => (
+              <div key={k} className="flex flex-wrap items-center gap-2">
+                <Input
+                  aria-label="Company name"
+                  className="min-w-[140px] flex-1"
+                  value={row.name}
+                  onChange={(e) =>
+                    setBrand({ notAffiliatedWith: affiliated.map((x, j) => (j === k ? { ...x, name: e.target.value } : x)) })
+                  }
+                  placeholder="Company name"
+                />
+                <Input
+                  aria-label="Company website"
+                  type="url"
+                  inputMode="url"
+                  dir="ltr"
+                  spellCheck={false}
+                  autoComplete="off"
+                  className="min-w-[180px] flex-[2]"
+                  value={row.url}
+                  onChange={(e) =>
+                    setBrand({ notAffiliatedWith: affiliated.map((x, j) => (j === k ? { ...x, url: e.target.value } : x)) })
+                  }
+                  placeholder="https://example.com"
+                />
+                <IconButton
+                  label="Remove company"
+                  icon={<Trash2 size={14} />}
+                  tone="danger"
+                  onClick={() => setBrand({ notAffiliatedWith: affiliated.filter((_, j) => j !== k) })}
+                />
+              </div>
+            ))}
+          </div>
+          <AddButton size="sm" onClick={() => setBrand({ notAffiliatedWith: [...affiliated, { name: "", url: "" }] })}>
+            Add company
+          </AddButton>
+          <div className="mt-1.5 text-caption text-faint">
+            Companies with a similar name that this one is not connected to; the site says so in its
+            structured data and llms.txt.
+          </div>
         </Card>
 
         </div>
