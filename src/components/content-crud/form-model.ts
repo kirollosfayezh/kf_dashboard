@@ -168,7 +168,9 @@ export function singularFor(label: string, override?: string): string {
 }
 
 /** The public page an item becomes, shown in the editor so the URL is never a
- *  guess. A blank slug shows a placeholder rather than a dangling `/`. */
-export function sitePageUrl(section: "projects" | "services", slug: string, siteUrl = SITE_URL): string {
-  return `${siteUrl}/${section}/${slug.trim() || "your-slug"}`;
+ *  guess. A blank slug shows a placeholder rather than a dangling `/`. Market
+ *  pages sit at the site root (`/saudi-arabia`), not under a section. */
+export function sitePageUrl(section: "projects" | "services" | "markets", slug: string, siteUrl = SITE_URL): string {
+  const path = slug.trim() || "your-slug";
+  return section === "markets" ? `${siteUrl}/${path}` : `${siteUrl}/${section}/${path}`;
 }

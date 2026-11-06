@@ -3,7 +3,7 @@ import { MediaPicker } from "@/components/MediaPicker";
 import type { ContentCollection } from "@/services/domain-types";
 import { Field, Input, Textarea, Toggle } from "@/components/ui";
 import { CMS_LANGS, type FormState, type LangCode, type MetaTextField } from "./form-model";
-import { ProjectFields, PromoFields, ServicePageNote, TestimonialFields } from "./CollectionFields";
+import { MarketPageNote, ProjectFields, PromoFields, ServicePageNote, TestimonialFields } from "./CollectionFields";
 
 /** The `id` the Drawer's footer Save button submits by (`form="…"`). */
 export const CONTENT_FORM_ID = "kf-content-form";
@@ -137,6 +137,7 @@ export function ContentEditorForm({
       {collection === "testimonials" ? <TestimonialFields form={form} setLink={setLink} /> : null}
       {collection === "projects" ? <ProjectFields form={form} setForm={setForm} setLink={setLink} /> : null}
       {collection === "services" ? <ServicePageNote slug={form.slug} /> : null}
+      {collection === "markets" ? <MarketPageNote slug={form.slug} /> : null}
 
       <label className="flex items-center gap-2.5 text-ui font-medium">
         <Toggle

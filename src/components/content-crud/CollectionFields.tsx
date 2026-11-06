@@ -254,3 +254,19 @@ export function ServicePageNote({ slug }: { slug: string }) {
     </div>
   );
 }
+
+/** Where a market page lives and how the site reads it. Like a service page,
+ *  but the document is the whole page: nothing lists markets as cards. */
+export function MarketPageNote({ slug }: { slug: string }) {
+  return (
+    <div className="mb-4 rounded-control border px-[14px] py-3 text-caption border-line bg-raised text-faint">
+      Country page:{" "}
+      <span className="font-mono text-muted">{sitePageUrl("markets", slug)}</span>
+      <br />
+      Only the slugs saudi-arabia, uae and gulf have a page on the site, in English and Arabic
+      (German and French are never shown). Title is the heading, summary the intro under it, and
+      the body the page in Markdown; a &quot;## Common questions&quot; section with ### questions
+      becomes FAQ data for Google. Redeploy the site after editing so search engines see the change.
+    </div>
+  );
+}

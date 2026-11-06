@@ -5,6 +5,7 @@ import {
   Inbox,
   MessageCircle,
   Briefcase,
+  Globe,
   FolderKanban,
   Layers,
   Newspaper,
@@ -64,6 +65,7 @@ const NAV: { group: string; items: { to: string; label: string; icon: React.Elem
     group: "CONTENT",
     items: [
       { to: "/services", label: "Services", icon: Briefcase },
+      { to: "/markets", label: "Markets", icon: Globe },
       { to: "/projects", label: "Projects", icon: FolderKanban },
       { to: "/solutions", label: "Solutions", icon: Layers },
       { to: "/blogPosts", label: "Articles", icon: Newspaper },

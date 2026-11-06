@@ -195,4 +195,8 @@ describe("sitePageUrl", () => {
   it("degrades to a site-relative path without an origin", () => {
     expect(sitePageUrl("services", "web-apps", "")).toBe("/services/web-apps");
   });
+
+  it("puts a market page at the site root", () => {
+    expect(sitePageUrl("markets", "saudi-arabia", "https://kf.example")).toBe("https://kf.example/saudi-arabia");
+  });
 });

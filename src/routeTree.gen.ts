@@ -21,6 +21,7 @@ import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as LegalPagesRouteImport } from './routes/legalPages'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MarketingRouteImport } from './routes/marketing'
+import { Route as MarketsRouteImport } from './routes/markets'
 import { Route as MediaRouteImport } from './routes/media'
 import { Route as NewsletterRouteImport } from './routes/newsletter'
 import { Route as NotificationsRouteImport } from './routes/notifications'
@@ -97,6 +98,11 @@ const LoginRoute = LoginRouteImport.update({
 const MarketingRoute = MarketingRouteImport.update({
   id: '/marketing',
   path: '/marketing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketsRoute = MarketsRouteImport.update({
+  id: '/markets',
+  path: '/markets',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MediaRoute = MediaRouteImport.update({
@@ -198,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/legalPages': typeof LegalPagesRoute
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
+  '/markets': typeof MarketsRoute
   '/media': typeof MediaRoute
   '/newsletter': typeof NewsletterRoute
   '/notifications': typeof NotificationsRoute
@@ -229,6 +236,7 @@ export interface FileRoutesByTo {
   '/legalPages': typeof LegalPagesRoute
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
+  '/markets': typeof MarketsRoute
   '/media': typeof MediaRoute
   '/newsletter': typeof NewsletterRoute
   '/notifications': typeof NotificationsRoute
@@ -261,6 +269,7 @@ export interface FileRoutesById {
   '/legalPages': typeof LegalPagesRoute
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
+  '/markets': typeof MarketsRoute
   '/media': typeof MediaRoute
   '/newsletter': typeof NewsletterRoute
   '/notifications': typeof NotificationsRoute
@@ -294,6 +303,7 @@ export interface FileRouteTypes {
     | '/legalPages'
     | '/login'
     | '/marketing'
+    | '/markets'
     | '/media'
     | '/newsletter'
     | '/notifications'
@@ -325,6 +335,7 @@ export interface FileRouteTypes {
     | '/legalPages'
     | '/login'
     | '/marketing'
+    | '/markets'
     | '/media'
     | '/newsletter'
     | '/notifications'
@@ -356,6 +367,7 @@ export interface FileRouteTypes {
     | '/legalPages'
     | '/login'
     | '/marketing'
+    | '/markets'
     | '/media'
     | '/newsletter'
     | '/notifications'
@@ -388,6 +400,7 @@ export interface RootRouteChildren {
   LegalPagesRoute: typeof LegalPagesRoute
   LoginRoute: typeof LoginRoute
   MarketingRoute: typeof MarketingRoute
+  MarketsRoute: typeof MarketsRoute
   MediaRoute: typeof MediaRoute
   NewsletterRoute: typeof NewsletterRoute
   NotificationsRoute: typeof NotificationsRoute
@@ -491,6 +504,13 @@ declare module '@tanstack/react-router' {
       path: '/marketing'
       fullPath: '/marketing'
       preLoaderRoute: typeof MarketingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/markets': {
+      id: '/markets'
+      path: '/markets'
+      fullPath: '/markets'
+      preLoaderRoute: typeof MarketsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/media': {
@@ -628,6 +648,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalPagesRoute: LegalPagesRoute,
   LoginRoute: LoginRoute,
   MarketingRoute: MarketingRoute,
+  MarketsRoute: MarketsRoute,
   MediaRoute: MediaRoute,
   NewsletterRoute: NewsletterRoute,
   NotificationsRoute: NotificationsRoute,
