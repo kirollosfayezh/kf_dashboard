@@ -11,6 +11,8 @@
 
 export const VIZ_1 = "var(--viz-1)";
 export const VIZ_2 = "var(--viz-2)";
+export const VIZ_3 = "var(--viz-3)";
+export const VIZ_4 = "var(--viz-4)";
 
 /** 1,284 / 12.9K / 3.4M — compact but never lossy below 10,000. */
 export function compact(n: number): string {

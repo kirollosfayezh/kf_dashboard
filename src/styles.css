@@ -465,6 +465,14 @@ button {
   background: var(--color-line-strong);
   border-radius: 999px;
 }
+/* Sideways-scrolling chip rows (the Analytics section bar): swipeable, no bar. */
+.kf-noscrollbar {
+  scrollbar-width: none;
+}
+.kf-noscrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .kf-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }

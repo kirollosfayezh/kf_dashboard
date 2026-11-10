@@ -22,6 +22,80 @@ export interface AnalyticsSummary {
 
 export type AnalyticsRange = 7 | 30 | 90 | 365;
 
+/** Shape of `GET /api/admin/analytics/insights?days=` — mirrors the backend contract. */
+export interface InsightRow {
+  key: string;
+  visitors: number;
+  leads: number;
+}
+
+export interface AdVisitor {
+  visitorId: string;
+  firstSeenAt: string;
+  lastSeenAt: string;
+  landingPath?: string;
+  campaign?: string;
+  keyword?: string;
+  adGroup?: string;
+  device?: string;
+  country?: string;
+  lang?: string;
+  sessions: number;
+  pageviews: number;
+  pages: string[];
+  /** Seconds between their first and last event in the range. */
+  spanSeconds: number;
+  /** Distinct days they were active in the range. */
+  activeDays: number;
+  contactTaps: string[];
+  conversions: string[];
+  contact?: { id: string; name?: string; phones: string[]; emails: string[]; company?: string; stage?: string };
+}
+
+export type SeriesChannel = "google_ads" | "search" | "social" | "direct" | "other";
+
+export interface DailyInsight {
+  day: string;
+  visitors: number;
+  contactTaps: number;
+  leads: number;
+  adVisitors: number;
+  adLeads: number;
+  channels: Record<SeriesChannel, number>;
+}
+
+export interface AnalyticsInsights {
+  range: { from: string; to: string; days: number };
+  channels: InsightRow[];
+  funnel: { visitors: number; engaged: number; contactTaps: number; leads: number };
+  contactTaps: { kind: string; taps: number; visitors: number }[];
+  conversions: { kind: string; count: number }[];
+  landingPages: InsightRow[];
+  countries: { key: string; visitors: number }[];
+  languages: { key: string; visitors: number }[];
+  hours: { hour: number; pageviews: number }[];
+  weekdays: { day: number; pageviews: number }[];
+  /** Pageviews by Cairo weekday (1 = Sunday) and hour; only non-empty cells. */
+  heatmap: { day: number; hour: number; pageviews: number }[];
+  daily: DailyInsight[];
+  /** Same counts for the equal-length period before this range. */
+  previous: { visitors: number; contactTaps: number; leads: number; adVisitors: number };
+  returning: { new: number; returning: number };
+  ads: {
+    visitors: number;
+    leads: number;
+    contactTaps: number;
+    campaigns: InsightRow[];
+    keywords: InsightRow[];
+    landingPages: InsightRow[];
+    people: AdVisitor[];
+  };
+}
+
+export function fetchInsights(days: AnalyticsRange | number) {
+  return api.get<AnalyticsInsights>(`/admin/analytics/insights?days=${days}`);
+}
+
 export function fetchSummary(days: AnalyticsRange | number) {
   return api.get<AnalyticsSummary>(`/admin/analytics/summary?days=${days}`);
 }
