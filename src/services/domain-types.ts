@@ -93,6 +93,7 @@ export interface SocialLinks {
   github?: string;
   youtube?: string;
   tiktok?: string;
+  snapchat?: string;
 }
 
 /** The other names the company is known by, per site language, for the

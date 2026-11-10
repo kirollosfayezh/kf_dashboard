@@ -40,6 +40,7 @@ const SOCIAL_FIELDS: { key: keyof SocialLinks; label: string; placeholder: strin
   { key: "github", label: "GitHub", placeholder: "https://github.com/yourorg" },
   { key: "youtube", label: "YouTube", placeholder: "https://www.youtube.com/@yourchannel" },
   { key: "tiktok", label: "TikTok", placeholder: "https://www.tiktok.com/@yourprofile" },
+  { key: "snapchat", label: "Snapchat", placeholder: "https://www.snapchat.com/add/yourprofile" },
 ];
 
 function SettingsPage() {

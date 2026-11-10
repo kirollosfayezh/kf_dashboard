@@ -254,3 +254,11 @@ export function summaryToCsv(data: AnalyticsSummary): string {
   section("Devices", ["device", "events"], data.devices.map((d) => [d.device, d.count]));
   return lines.join("\n");
 }
+
+/** The word the backend requires before it wipes analytics. */
+export const RESET_CONFIRMATION = "RESET";
+
+/** Deletes every analytics event and visitor profile (leads, contacts and chats are kept). */
+export function resetAnalytics() {
+  return api.post<{ events: number; visitors: number }>("/admin/analytics/reset", { confirm: RESET_CONFIRMATION });
+}

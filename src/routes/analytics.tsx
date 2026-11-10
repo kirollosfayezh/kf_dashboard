@@ -24,6 +24,7 @@ import {
   SourcesCard,
   TimingCard,
 } from "@/components/analytics-insights";
+import { AnalyticsDataCard } from "@/components/analytics-data-card";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/analytics")({
@@ -70,7 +71,7 @@ function hostOf(referrer: string): string {
 }
 
 /** Fetches one analytics payload per range, keeping the last result on screen while the next loads. */
-function useRangeData<T>(days: AnalyticsRange, load: (d: AnalyticsRange) => Promise<T>) {
+function useRangeData<T>(days: AnalyticsRange, load: (d: AnalyticsRange) => Promise<T>, reload = 0) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -85,7 +86,7 @@ function useRangeData<T>(days: AnalyticsRange, load: (d: AnalyticsRange) => Prom
     return () => {
       cancelled = true;
     };
-  }, [days, load]);
+  }, [days, load, reload]);
   return { data, loading, error };
 }
 
@@ -172,8 +173,10 @@ const grid2 = { gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 340px), 
 
 function AnalyticsPage() {
   const [days, setDays] = useState<AnalyticsRange>(30);
-  const summary = useRangeData(days, fetchSummary);
-  const insights = useRangeData(days, fetchInsights);
+  // Bumped after "start from zero" so every card re-reads the emptied data.
+  const [reload, setReload] = useState(0);
+  const summary = useRangeData(days, fetchSummary, reload);
+  const insights = useRangeData(days, fetchInsights, reload);
   const data = summary.data;
   const ins: AnalyticsInsights | null = insights.data;
   const loading = summary.loading || insights.loading;
@@ -317,6 +320,10 @@ function AnalyticsPage() {
             />
           </div>
         </Section>
+
+        <div className="mb-4">
+          <AnalyticsDataCard onReset={() => setReload((n) => n + 1)} />
+        </div>
 
         <Card>
           <PanelHead title="What is counted" subtitle="Everything on this screen comes from your own site — no third-party tracker." />
