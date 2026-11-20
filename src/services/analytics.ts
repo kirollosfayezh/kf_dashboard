@@ -34,9 +34,15 @@ export interface AdVisitor {
   firstSeenAt: string;
   lastSeenAt: string;
   landingPath?: string;
+  /** The campaign's name once the Ads script has synced; the raw tag (an id) until then. */
   campaign?: string;
+  /** The keyword of ours that matched — not the words the person typed. */
   keyword?: string;
   adGroup?: string;
+  matchType?: "exact" | "phrase" | "broad";
+  /** Google's network code (g, s, d, ytv, x…). */
+  network?: string;
+  adId?: string;
   device?: string;
   country?: string;
   lang?: string;
@@ -87,6 +93,9 @@ export interface AnalyticsInsights {
     contactTaps: number;
     campaigns: InsightRow[];
     keywords: InsightRow[];
+    /** Empty until the Final URL suffix carries `kf_mt` / `kf_net`. Optional: an older API omits them. */
+    matchTypes?: InsightRow[];
+    networks?: InsightRow[];
     landingPages: InsightRow[];
     people: AdVisitor[];
   };

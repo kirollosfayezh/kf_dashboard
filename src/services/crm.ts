@@ -14,7 +14,14 @@ export interface Touch {
   utmTerm?: string;
   utmContent?: string;
   gclid?: string;
+  /** Google's click ids on iOS, where a gclid is often withheld. */
+  gbraid?: string;
+  wbraid?: string;
   fbclid?: string;
+  /** Google Ads details from the Final URL suffix. */
+  matchType?: "exact" | "phrase" | "broad";
+  network?: string;
+  adId?: string;
   at?: string;
 }
 

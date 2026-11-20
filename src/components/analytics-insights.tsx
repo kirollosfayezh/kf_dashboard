@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Clock, Mail, MessageCircle, MousePointerClick, Phone } from "lucide-react";
 import { delta, type AdVisitor, type AnalyticsInsights, type AnalyticsSummary, type InsightRow, type SeriesChannel } from "@/services/analytics";
@@ -26,6 +26,8 @@ import {
   type RankRow,
 } from "@/components/charts";
 import { Card, PanelHead, Pill, Skeleton, StatTile } from "@/components/ui";
+import { AdsSetupCard, SearchTermsCard } from "@/components/ads-search-terms";
+import { MATCH_LABEL, NETWORK_LABEL, fetchAdsSetup, type AdsSetup } from "@/services/google-ads";
 import { countryName } from "@/lib/crm";
 import { cn } from "@/lib/utils";
 
@@ -267,8 +269,15 @@ function AdPerson({ p }: { p: AdVisitor }) {
         </div>
       ) : null}
       <div className="mt-2 grid gap-x-4 gap-y-1 text-caption text-muted" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 170px), 1fr))" }}>
-        <span className="min-w-0">Keyword: <b className="text-ink">{p.keyword || "—"}</b></span>
-        <span className="min-w-0">Campaign: <b className="text-ink">{p.campaign || "—"}</b></span>
+        <span className="min-w-0">
+          Keyword: <b className="text-ink">{p.keyword || "—"}</b>
+          {p.matchType ? <span className="font-mono text-faint"> · {MATCH_LABEL[p.matchType] ?? p.matchType}</span> : null}
+        </span>
+        <span className="min-w-0">
+          Campaign: <b className="text-ink">{p.campaign || "—"}</b>
+          {p.adGroup ? <span className="text-faint"> · {p.adGroup}</span> : null}
+        </span>
+        {p.network ? <span className="min-w-0">Shown on: <b className="text-ink">{NETWORK_LABEL[p.network] ?? p.network}</b></span> : null}
         <span className="min-w-0 break-words">Landed on: <b className="font-mono text-ink">{p.landingPath || "—"}</b></span>
         <span className="min-w-0">
           {[p.device, countryName(p.country), p.lang?.toUpperCase()].filter(Boolean).join(" · ") || "—"} · {p.pageviews} pages
@@ -303,7 +312,19 @@ export function AdsSection({ insights }: { insights: AnalyticsInsights }) {
   const ads = insights.ads;
   const people = ads.people.filter((p) => !onlyHot || p.contact || p.conversions.length || p.contactTaps.length);
   const shown = showAll ? people : people.slice(0, 12);
-  const untagged = ads.visitors > 0 && ads.keywords.every((k) => k.key === "(not tagged)");
+  const [setup, setSetup] = useState<AdsSetup | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    // Best effort: without it the setup card still shows the suffix step.
+    fetchAdsSetup()
+      .then((s) => !cancelled && setSetup(s))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [insights.range.to]);
+  const matchTypes = ads.matchTypes ?? [];
+  const networks = ads.networks ?? [];
   const trend = insights.daily.map((d) => ({ day: d.day, adVisitors: d.adVisitors, adLeads: d.adLeads }));
   const named = ads.people.filter((p) => p.contact).length;
   const vsPrev = delta(ads.visitors, insights.previous.adVisitors);
@@ -337,23 +358,16 @@ export function AdsSection({ insights }: { insights: AnalyticsInsights }) {
             />
           </div>
         )}
-        {untagged ? (
-          <p className="mt-4 rounded-control border border-line bg-raised p-3 text-ui text-muted">
-            To see the <b className="text-ink">keyword</b> and campaign for each visitor, add this in Google Ads → Campaign settings → Campaign URL
-            options → <b className="text-ink">Final URL suffix</b>:{" "}
-            <span className="break-all font-mono text-caption text-ink">
-              utm_source=google&amp;utm_medium=cpc&amp;utm_campaign={"{campaignid}"}&amp;utm_term={"{keyword}"}&amp;utm_content={"{adgroupid}"}
-            </span>
-          </p>
-        ) : null}
       </Card>
+
+      <AdsSetupCard insights={insights} setup={setup} onSetup={setSetup} />
 
       {ads.visitors > 0 ? (
         <>
           <div className="mt-4 grid gap-4" style={grid2}>
             <ChartCard
               title="Keywords"
-              subtitle="What they searched before clicking your ad."
+              subtitle="Your keyword that matched each visitor — not the exact words they typed (those are in Search terms below)."
               chart={
                 <RankedBars
                   rows={ads.keywords.map((k) => ({ label: `${isolate(k.key)}${k.leads ? ` · ${k.leads} enquir${k.leads === 1 ? "y" : "ies"}` : ""}`, value: k.visitors }))}
@@ -371,6 +385,37 @@ export function AdsSection({ insights }: { insights: AnalyticsInsights }) {
               table={<ScrollTable head={["Landing page", "Visitors", "Enquiries", "Rate"]} rows={rateRows(ads.landingPages)} numericFrom={1} />}
             />
           </div>
+          {matchTypes.length || networks.length ? (
+            <div className="mt-4 grid gap-4" style={grid2}>
+              <ChartCard
+                title="Match type"
+                subtitle="How loosely the keyword matched. Broad with many visitors and no enquiries is where negatives are needed."
+                chart={
+                  <RankedBars
+                    rows={matchTypes.map((m) => ({ label: `${MATCH_LABEL[m.key] ?? m.key}${m.leads ? ` · ${m.leads} enquir${m.leads === 1 ? "y" : "ies"}` : ""}`, value: m.visitors }))}
+                    color={VIZ_1}
+                    unit="visitors"
+                    emptyLabel="No match types yet."
+                  />
+                }
+                table={<ScrollTable head={["Match type", "Visitors", "Enquiries", "Rate"]} rows={rateRows(matchTypes, (k) => MATCH_LABEL[k] ?? k)} numericFrom={1} />}
+              />
+              <ChartCard
+                title="Where the ad was shown"
+                subtitle="Google Search, its search partners, Display or YouTube."
+                chart={
+                  <RankedBars
+                    rows={networks.map((m) => ({ label: `${NETWORK_LABEL[m.key] ?? m.key}${m.leads ? ` · ${m.leads} enquir${m.leads === 1 ? "y" : "ies"}` : ""}`, value: m.visitors }))}
+                    color={VIZ_2}
+                    unit="visitors"
+                    emptyLabel="No networks yet."
+                  />
+                }
+                table={<ScrollTable head={["Network", "Visitors", "Enquiries", "Rate"]} rows={rateRows(networks, (k) => NETWORK_LABEL[k] ?? k)} numericFrom={1} />}
+              />
+            </div>
+          ) : null}
+          <SearchTermsCard days={insights.range.days} reload={setup?.lastSyncAt ? 1 : 0} />
           <Card className="mt-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <PanelHead title="People from Google Ads" subtitle="Enquiries and contact taps first. Open a name for the full CRM record." />
@@ -390,7 +435,9 @@ export function AdsSection({ insights }: { insights: AnalyticsInsights }) {
             ) : null}
           </Card>
         </>
-      ) : null}
+      ) : (
+        <SearchTermsCard days={insights.range.days} reload={setup?.lastSyncAt ? 1 : 0} />
+      )}
     </>
   );
 }

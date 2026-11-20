@@ -285,7 +285,8 @@ function Journey({ data }: { data: ContactDetail }) {
             {touch.utmMedium ? <span>Medium: <b>{touch.utmMedium}</b></span> : null}
             {touch.utmCampaign ? <span>Campaign: <b>{touch.utmCampaign}</b></span> : null}
             {touch.landingPath ? <span>Landed on: <b className="font-mono">{touch.landingPath}</b></span> : null}
-            {touch.gclid ? <Pill tone="info">Google Ads click</Pill> : null}
+            {touch.utmTerm ? <span>Keyword: <b>{touch.utmTerm}</b>{touch.matchType ? ` (${touch.matchType})` : ""}</span> : null}
+            {touch.gclid || touch.gbraid || touch.wbraid ? <Pill tone="info">Google Ads click</Pill> : null}
             {touch.fbclid ? <Pill tone="info">Meta ad click</Pill> : null}
           </div>
         </Card>

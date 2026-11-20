@@ -273,7 +273,7 @@ function AnalyticsPage() {
           </div>
         </Section>
 
-        <Section id="an-ads" title="Google Ads" subtitle="Everyone who arrived from a Google ad — what they searched, what they did, and who they are when they left their details.">
+        <Section id="an-ads" title="Google Ads" subtitle="Everyone who arrived from a Google ad: their keyword, what they did, and who they are when they left their details. Plus the words people really typed, for picking negative keywords.">
           {ins ? <AdsSection insights={ins} /> : <CardSkeleton height={260} />}
         </Section>
 
@@ -338,7 +338,8 @@ function AnalyticsPage() {
               ["Conversion", "Enquiries divided by visitors."],
               ["▲ / ▼ %", "Change against the period of the same length just before this one."],
               ["Source", "Where a visitor's first visit came from. Google Ads is split out from other paid traffic."],
-              ["Google Ads visitor", "Arrived with a Google click id (gclid) or google + cpc tags. Keywords need the Final URL suffix in Google Ads."],
+              ["Google Ads visitor", "Arrived with a Google click id (gclid, or gbraid / wbraid on iPhone) or google + cpc tags. Keywords need the Final URL suffix in Google Ads."],
+              ["Keyword vs search term", "The keyword is yours: the one you bid on that matched. The search term is what the person typed; Google only reports it inside Google Ads, so the script sends it here once a day."],
               ["Time on site", "From a person's first to last recorded action in the range; 'active on N days' when they came back."],
               ["Named contact", "A visitor who left their name, phone or email (form, chat or booking), linked to the CRM."],
               ["Referrers / devices", "Counted per recorded event, not per visitor."],
