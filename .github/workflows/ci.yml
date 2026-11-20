@@ -38,7 +38,7 @@ jobs:
         env:
           # The build refuses to run without an API origin (see vite.config.ts).
           # This is a public URL, not a secret; nothing is deployed from CI.
-          VITE_API_BASE_URL: https://kf-backend-tv5l.onrender.com
+          VITE_API_BASE_URL: https://api.kftechsolutions.dev
 
       # The router plugin regenerates src/routeTree.gen.ts during the build.
       # Fail if the committed copy has drifted from the routes on disk.

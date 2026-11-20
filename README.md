@@ -28,7 +28,7 @@ npm run dev
 
 | Variable | Purpose |
 |---|---|
-| `VITE_API_BASE_URL` | Origin of the `kf_backend` server, with no trailing slash and no `/api` suffix (`http://localhost:4000` locally, `https://<service>.onrender.com` on Render). REST calls are made to `<VITE_API_BASE_URL>/api/…`; Socket.io connects to the origin itself, since the realtime server shares the HTTP server. |
+| `VITE_API_BASE_URL` | Origin of the `kf_backend` server, with no trailing slash and no `/api` suffix (`http://localhost:4000` locally, `https://api.kftechsolutions.dev` in production — the custom domain on the Render service). REST calls are made to `<VITE_API_BASE_URL>/api/…`; Socket.io connects to the origin itself, since the realtime server shares the HTTP server. |
 | `VITE_SITE_URL` | Optional. Target of the sidebar's "View live site" link. |
 
 ## Auth
